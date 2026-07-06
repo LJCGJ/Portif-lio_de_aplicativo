@@ -30,6 +30,7 @@
       <a class="brand" href="index.html">LJCGJ<span class="tld">.dev</span> <span class="sub">Leonardo Gonzaga</span></a>
       <nav class="nav">
         <a href="#projetos">Projetos</a>
+        <a href="downloads.html">Downloads</a>
         <a href="blog.html">Blog</a>
         <a class="hide-sm" href="#sobre">Sobre</a>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Mudar tema">☾</button>
@@ -41,9 +42,9 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow">QA automation · desenvolvimento de sistemas</p>
-        <h1>Eu construo o <span class="hl">motor</span>, não só a página.</h1>
-        <p class="lead">
+        <p class="eyebrow" id="hero-eyebrow">QA automation · desenvolvimento de sistemas</p>
+        <h1 id="hero-title">Eu construo o <span class="hl">motor</span>, não só a página.</h1>
+        <p class="lead" id="hero-lead">
           Engenheiro de automação de testes e programador de sistemas.
           Utilitários em C++, automação em Python/Robot Framework, apps Android em Kotlin.
           Este próprio blog roda num motor que escrevi em C++.
@@ -82,73 +83,8 @@
         <a class="link" href="https://github.com/LJCGJ" target="_blank" rel="noopener">todos no GitHub ↗</a>
       </div>
 
-      <div class="projects">
-        <!-- DESTAQUE: Limpador de Arquivos -->
-        <article class="card feature">
-          <p class="kicker">Destaque · Windows</p>
-          <h3>Limpador de Arquivos</h3>
-          <p class="desc">
-            Utilitário de limpeza para Windows em C++/CLI (WinForms). Faz varredura de mídia antiga,
-            instaladores abandonados e pastas órfãs (via registro); tema claro/escuro, envio para a
-            lixeira, exportação em CSV e barra de progresso real com Cancelar. Instalador feito com Inno Setup.
-          </p>
-          <div class="tags">
-            <span class="tag">C++/CLI</span>
-            <span class="tag">WinForms</span>
-            <span class="tag">.NET 4.7.2</span>
-            <span class="tag">Inno Setup</span>
-          </div>
-          <div class="card-actions">
-            <!-- Depois de criar o Release com o instalador, este botão já aponta pra ele -->
-            <a class="btn btn-primary" href="https://github.com/LJCGJ/Limpador_arquivos/releases/latest" target="_blank" rel="noopener">Baixar instalador ↓</a>
-            <a class="btn btn-ghost" href="https://github.com/LJCGJ/Limpador_arquivos" target="_blank" rel="noopener">Código ↗</a>
-          </div>
-        </article>
-
-        <!-- Auto-clicker Android -->
-        <article class="card">
-          <p class="kicker">Android</p>
-          <h3>Auto-clicker</h3>
-          <p class="desc">
-            App de cliques/gestos automáticos em Kotlin + Jetpack Compose, com cálculo do caminho
-            de swipe em C++ nativo (curvas de Bézier com jitter) via NDK.
-          </p>
-          <div class="tags">
-            <span class="tag">Kotlin</span>
-            <span class="tag">Compose</span>
-            <span class="tag">NDK / C++</span>
-          </div>
-          <div class="card-actions">
-            <!-- EDITE AQUI: troque pelo link real do repositório -->
-            <a class="btn btn-ghost" href="https://github.com/LJCGJ" target="_blank" rel="noopener">Código ↗</a>
-          </div>
-        </article>
-
-        <!-- Este site -->
-        <article class="card">
-          <p class="kicker">Web · open source</p>
-          <h3>Este site</h3>
-          <p class="desc">
-            Portfólio + blog estático no GitHub Pages. O detalhe: o motor que renderiza o Markdown
-            dos posts é escrito em C++ e compilado para WebAssembly.
-          </p>
-          <div class="tags">
-            <span class="tag">C++ → WASM</span>
-            <span class="tag">JS</span>
-            <span class="tag">GitHub Pages</span>
-          </div>
-          <div class="card-actions">
-            <a class="btn btn-ghost" href="https://github.com/LJCGJ/Portif-lio_de_aplicativo" target="_blank" rel="noopener">Código ↗</a>
-          </div>
-        </article>
-
-        <!-- Placeholder pra você preencher -->
-        <article class="card soon">
-          <p class="kicker">Em breve</p>
-          <h3>Próximo projeto</h3>
-          <p class="desc">Espaço reservado. Duplique um cartão acima e edite para adicionar mais um projeto.</p>
-          <div class="tags"><span class="tag">…</span></div>
-        </article>
+      <div class="projects" id="projects-grid">
+        <p class="mono" style="color:var(--ink-faint)">Carregando projetos…</p>
       </div>
     </div>
   </section>
@@ -168,12 +104,14 @@
   <footer class="footer" id="sobre">
     <div class="wrap footer-grid">
       <div>
-        <div class="who">Leonardo Gonzaga</div>
-        <div class="meta">QA automation · C++ · Python · Kotlin</div>
+        <div class="who" id="footer-who">Leonardo Gonzaga</div>
+        <div class="meta" id="footer-meta">QA automation · C++ · Python · Kotlin</div>
       </div>
       <div class="links">
         <a href="https://github.com/LJCGJ" target="_blank" rel="noopener">GitHub</a>
+        <a href="downloads.html">Downloads</a>
         <a href="blog.html">Blog</a>
+        <a href="admin.html" style="color:var(--ink-faint)">admin</a>
       </div>
     </div>
     <div class="wrap"><p class="meta" style="margin-top:1rem">Motor de Markdown em C++ → WebAssembly. Código aberto.</p></div>

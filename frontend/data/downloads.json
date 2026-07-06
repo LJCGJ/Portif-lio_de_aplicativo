@@ -1,0 +1,13 @@
+[
+  {
+    "id": "limpador",
+    "name": "Limpador de Arquivos",
+    "desc": "Utilitário de limpeza para Windows: varredura de mídia antiga, instaladores abandonados e pastas órfãs, com envio para a lixeira e exportação em CSV.",
+    "platform": "Windows 10/11 · 64-bit",
+    "url": "",
+    "version": "",
+    "repo": "LJCGJ/Limpador_arquivos",
+    "requirements": ".NET Framework 4.7.2 (o instalador inclui o runtime do Visual C++)",
+    "notes": "Instalador sem assinatura digital: se o Windows SmartScreen avisar, use “Mais informações → Executar assim mesmo”."
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "featured": true,
+    "kicker": "Destaque · Windows",
+    "title": "Limpador de Arquivos",
+    "desc": "Utilitário de limpeza para Windows em C++/CLI (WinForms). Faz varredura de mídia antiga, instaladores abandonados e pastas órfãs (via registro); tema claro/escuro, envio para a lixeira, exportação em CSV e barra de progresso real com Cancelar. Instalador feito com Inno Setup.",
+    "tags": ["C++/CLI", "WinForms", ".NET 4.7.2", "Inno Setup"],
+    "actions": [
+      { "label": "Baixar instalador ↓", "href": "downloads.html", "style": "primary" },
+      { "label": "Código ↗", "href": "https://github.com/LJCGJ/Limpador_arquivos", "style": "ghost", "external": true }
+    ]
+  },
+  {
+    "featured": false,
+    "kicker": "Android",
+    "title": "Auto-clicker",
+    "desc": "App de cliques/gestos automáticos em Kotlin + Jetpack Compose, com cálculo do caminho de swipe em C++ nativo (curvas de Bézier com jitter) via NDK.",
+    "tags": ["Kotlin", "Compose", "NDK / C++"],
+    "actions": [
+      { "label": "Código ↗", "href": "https://github.com/LJCGJ", "style": "ghost", "external": true }
+    ]
+  },
+  {
+    "featured": false,
+    "kicker": "Web · open source",
+    "title": "Este site",
+    "desc": "Portfólio + blog estático no GitHub Pages, com painel de administração próprio. O motor que renderiza o Markdown dos posts é escrito em C++ e compilado para WebAssembly.",
+    "tags": ["C++ → WASM", "JS", "GitHub Pages"],
+    "actions": [
+      { "label": "Código ↗", "href": "https://github.com/LJCGJ/Portif-lio_de_aplicativo", "style": "ghost", "external": true }
+    ]
+  }
+]

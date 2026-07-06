@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — LJCGJ.dev</title>
+  <meta name="robots" content="noindex" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t) { t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ---- estilos só do admin ---- */
+    .admin-wrap { max-width: 900px; margin: 0 auto; padding: 2.2rem var(--gap) 4rem; }
+    .login-card {
+      max-width: 460px; margin: 3rem auto; padding: 1.8rem;
+      border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface);
+    }
+    .login-card h1 { font-family: var(--mono); font-size: 1.2rem; margin: 0 0 0.4rem; }
+    .login-card p { color: var(--ink-soft); font-size: 0.9rem; }
+    .field { margin: 0 0 1rem; }
+    .field label {
+      display: block; font-family: var(--mono); font-size: 0.72rem;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft);
+      margin-bottom: 0.35rem;
+    }
+    .field input[type="text"], .field input[type="password"], .field input[type="date"],
+    .field textarea, .field select {
+      width: 100%; padding: 0.6em 0.75em;
+      border: 1px solid var(--line); border-radius: var(--r-btn);
+      background: var(--paper); color: var(--ink);
+      font-family: var(--mono); font-size: 0.86rem;
+    }
+    .field textarea { min-height: 130px; line-height: 1.55; resize: vertical; }
+    .field textarea.tall { min-height: 320px; }
+    .field .hint { font-size: 0.74rem; color: var(--ink-faint); margin-top: 0.3rem; font-family: var(--mono); }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+    @media (max-width: 620px) { .row2 { grid-template-columns: 1fr; } }
+
+    .admin-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding-bottom: 1.2rem; border-bottom: 1px solid var(--line); margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+    }
+    .admin-bar .who { font-family: var(--mono); font-size: 0.84rem; color: var(--ink-soft); }
+    .tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+    .tab {
+      font-family: var(--mono); font-size: 0.82rem; padding: 0.45em 0.9em;
+      border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+      color: var(--ink-soft); cursor: pointer;
+    }
+    .tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .item-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.2rem; }
+    .item-row {
+      display: flex; align-items: center; gap: 0.8rem;
+      border: 1px solid var(--line); border-radius: var(--r-btn);
+      background: var(--surface); padding: 0.7rem 0.9rem;
+    }
+    .item-row .grow { flex: 1; min-width: 0; }
+    .item-row .t { font-size: 0.95rem; font-weight: 500; }
+    .item-row .s { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faint); }
+    .btn-sm { font-size: 0.74rem; padding: 0.4em 0.8em; }
+    .btn-danger { background: transparent; color: #C22; border: 1px solid var(--line); }
+    .btn-danger:hover { border-color: #C22; }
+
+    .editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 820px) { .editor-grid { grid-template-columns: 1fr; } }
+    .preview-box {
+      border: 1px solid var(--line); border-radius: var(--r-btn);
+      background: var(--surface); padding: 1rem; overflow: auto; max-height: 480px;
+      font-size: 0.94rem;
+    }
+    .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+    .status {
+      font-family: var(--mono); font-size: 0.78rem; margin-top: 0.9rem;
+      padding: 0.6rem 0.8rem; border-radius: var(--r-btn); display: none;
+    }
+    .status.show { display: block; }
+    .status.ok { background: color-mix(in srgb, var(--ok) 12%, transparent); color: var(--ok); }
+    .status.err { background: rgba(200, 40, 40, 0.1); color: #C22; }
+    .status.busy { background: var(--accent-dim); color: var(--accent); }
+    fieldset { border: 1px solid var(--line); border-radius: var(--r-card); padding: 1.1rem; margin: 0 0 1.1rem; }
+    legend { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); padding: 0 0.4em; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="index.html">LJCGJ<span class="tld">.dev</span> <span class="sub">painel de administração</span></a>
+      <nav class="nav">
+        <a href="index.html">Ver site</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Mudar tema">☾</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- =============== LOGIN =============== -->
+  <div id="login-view" class="admin-wrap" hidden>
+    <div class="login-card">
+      <h1>Entrar no painel</h1>
+      <p>
+        O painel salva as edições como commits no repositório, então a "senha"
+        é um <strong>token de acesso do GitHub</strong> — só você o tem, e ele fica
+        apenas neste navegador.
+      </p>
+      <div class="field">
+        <label for="token">Token de acesso (fine-grained)</label>
+        <input type="password" id="token" autocomplete="off" placeholder="github_pat_…" />
+        <p class="hint">
+          Crie em github.com → Settings → Developer settings → Fine-grained tokens.
+          Repositório: Portif-lio_de_aplicativo · Permissão: Contents → Read and write.
+        </p>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="remember" /> continuar conectado neste navegador</label>
+      </div>
+      <button class="btn btn-primary" id="btn-login" type="button">Entrar</button>
+      <div id="login-status" class="status"></div>
+    </div>
+  </div>
+
+  <!-- =============== PAINEL =============== -->
+  <div id="admin-view" class="admin-wrap" hidden>
+    <div class="admin-bar">
+      <div class="who" id="admin-who">…</div>
+      <div style="display:flex;gap:.6rem">
+        <a class="btn btn-ghost btn-sm" href="index.html" target="_blank" rel="noopener">Abrir site ↗</a>
+        <button class="btn btn-ghost btn-sm" id="btn-logout" type="button">Sair</button>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="posts" aria-selected="true" type="button">Posts</button>
+      <button class="tab" role="tab" data-tab="projects" aria-selected="false" type="button">Projetos</button>
+      <button class="tab" role="tab" data-tab="downloads" aria-selected="false" type="button">Downloads</button>
+      <button class="tab" role="tab" data-tab="texts" aria-selected="false" type="button">Textos do site</button>
+    </div>
+
+    <!-- ---- POSTS ---- -->
+    <section class="panel active" id="panel-posts">
+      <div class="item-list" id="post-list"></div>
+      <button class="btn btn-primary btn-sm" id="btn-new-post" type="button">+ Novo post</button>
+
+      <div id="post-editor" hidden style="margin-top:1.4rem">
+        <fieldset>
+          <legend>Dados do post</legend>
+          <div class="row2">
+            <div class="field">
+              <label for="p-title">Título</label>
+              <input type="text" id="p-title" />
+            </div>
+            <div class="field">
+              <label for="p-slug">Slug (nome do arquivo, sem espaços)</label>
+              <input type="text" id="p-slug" placeholder="meu-novo-post" />
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="p-date">Data</label>
+              <input type="date" id="p-date" />
+            </div>
+            <div class="field">
+              <label for="p-tags">Tags (separadas por vírgula)</label>
+              <input type="text" id="p-tags" placeholder="C++, WebAssembly" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="p-summary">Resumo (aparece na lista)</label>
+            <input type="text" id="p-summary" />
+          </div>
+        </fieldset>
+
+        <div class="editor-grid">
+          <div class="field">
+            <label for="p-body">Conteúdo (Markdown)</label>
+            <textarea id="p-body" class="tall" spellcheck="false"></textarea>
+          </div>
+          <div>
+            <label class="field" style="margin-bottom:0.35rem"><span style="font-family:var(--mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft)">Pré-visualização (motor)</span></label>
+            <div id="p-preview" class="preview-box prose"></div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btn-save-post" type="button">Salvar e publicar</button>
+          <button class="btn btn-ghost" id="btn-cancel-post" type="button">Cancelar</button>
+          <button class="btn btn-danger" id="btn-delete-post" type="button" hidden>Excluir post</button>
+        </div>
+      </div>
+      <div id="posts-status" class="status"></div>
+    </section>
+
+    <!-- ---- PROJETOS ---- -->
+    <section class="panel" id="panel-projects">
+      <div class="item-list" id="project-list"></div>
+      <button class="btn btn-primary btn-sm" id="btn-new-project" type="button">+ Novo projeto</button>
+
+      <div id="project-editor" hidden style="margin-top:1.4rem">
+        <fieldset>
+          <legend>Cartão do projeto</legend>
+          <div class="row2">
+            <div class="field">
+              <label for="pr-title">Nome</label>
+              <input type="text" id="pr-title" />
+            </div>
+            <div class="field">
+              <label for="pr-kicker">Categoria (linha pequena azul)</label>
+              <input type="text" id="pr-kicker" placeholder="Windows · utilitário" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="pr-desc">Descrição</label>
+            <textarea id="pr-desc"></textarea>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="pr-tags">Tags (separadas por vírgula)</label>
+              <input type="text" id="pr-tags" placeholder="C++, WinForms" />
+            </div>
+            <div class="field">
+              <label for="pr-featured">Destaque (cartão largo)</label>
+              <select id="pr-featured">
+                <option value="false">Não</option>
+                <option value="true">Sim</option>
+              </select>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="pr-code">Link do código (opcional)</label>
+              <input type="text" id="pr-code" placeholder="https://github.com/LJCGJ/…" />
+            </div>
+            <div class="field">
+              <label for="pr-download">Link de download (opcional)</label>
+              <input type="text" id="pr-download" placeholder="downloads.html ou URL" />
+            </div>
+          </div>
+        </fieldset>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btn-save-project" type="button">Salvar e publicar</button>
+          <button class="btn btn-ghost" id="btn-cancel-project" type="button">Cancelar</button>
+          <button class="btn btn-danger" id="btn-delete-project" type="button" hidden>Excluir projeto</button>
+        </div>
+      </div>
+      <div id="projects-status" class="status"></div>
+    </section>
+
+    <!-- ---- DOWNLOADS ---- -->
+    <section class="panel" id="panel-downloads">
+      <p class="engine-cap" style="margin:0 0 1rem">
+        Cada item vira um cartão na página <a href="downloads.html">Downloads</a>. Aponte para o
+        repositório e o site busca sozinho o instalador do release mais recente.
+      </p>
+      <div class="item-list" id="download-list"></div>
+      <button class="btn btn-primary btn-sm" id="btn-new-download" type="button">+ Novo download</button>
+
+      <div id="download-editor" hidden style="margin-top:1.4rem">
+        <fieldset>
+          <legend>Item de download</legend>
+          <div class="row2">
+            <div class="field">
+              <label for="d-name">Nome do aplicativo</label>
+              <input type="text" id="d-name" />
+            </div>
+            <div class="field">
+              <label for="d-platform">Plataforma</label>
+              <input type="text" id="d-platform" placeholder="Windows 10/11 · 64-bit" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="d-desc">Descrição</label>
+            <textarea id="d-desc"></textarea>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="d-url">Link do Google Drive (ou URL direta) — tem prioridade</label>
+              <input type="text" id="d-url" placeholder="https://drive.google.com/…" />
+              <p class="hint">No Drive: botão direito no arquivo/pasta → Compartilhar → "Qualquer pessoa com o link".</p>
+            </div>
+            <div class="field">
+              <label for="d-version">Versão exibida (opcional)</label>
+              <input type="text" id="d-version" placeholder="v1.1" />
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="d-repo">OU repositório (usuário/repo) — busca o release mais recente sozinho</label>
+              <input type="text" id="d-repo" placeholder="LJCGJ/Limpador_arquivos" />
+            </div>
+            <div class="field">
+              <label for="d-req">Requisitos (opcional)</label>
+              <input type="text" id="d-req" placeholder=".NET Framework 4.7.2" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="d-notes">Observações (opcional)</label>
+            <input type="text" id="d-notes" placeholder="Aviso do SmartScreen etc." />
+          </div>
+        </fieldset>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btn-save-download" type="button">Salvar e publicar</button>
+          <button class="btn btn-ghost" id="btn-cancel-download" type="button">Cancelar</button>
+          <button class="btn btn-danger" id="btn-delete-download" type="button" hidden>Excluir item</button>
+        </div>
+      </div>
+      <div id="downloads-status" class="status"></div>
+    </section>
+
+    <!-- ---- TEXTOS ---- -->
+    <section class="panel" id="panel-texts">
+      <fieldset>
+        <legend>Topo da home</legend>
+        <div class="field">
+          <label for="t-eyebrow">Linha pequena (acima do título)</label>
+          <input type="text" id="t-eyebrow" />
+        </div>
+        <div class="field">
+          <label for="t-title">Título (aceita HTML — use &lt;span class="hl"&gt;palavra&lt;/span&gt; para destacar em azul)</label>
+          <textarea id="t-title"></textarea>
+        </div>
+        <div class="field">
+          <label for="t-lead">Parágrafo de apresentação</label>
+          <textarea id="t-lead"></textarea>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Rodapé</legend>
+        <div class="row2">
+          <div class="field">
+            <label for="t-who">Nome</label>
+            <input type="text" id="t-who" />
+          </div>
+          <div class="field">
+            <label for="t-meta">Linha de baixo</label>
+            <input type="text" id="t-meta" />
+          </div>
+        </div>
+      </fieldset>
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btn-save-texts" type="button">Salvar e publicar</button>
+      </div>
+      <div id="texts-status" class="status"></div>
+    </section>
+
+    <p class="engine-cap" style="margin-top:2.5rem">
+      Cada "Salvar e publicar" cria um commit no repositório e dispara a publicação
+      automática. O site atualiza em 1–2 minutos.
+    </p>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

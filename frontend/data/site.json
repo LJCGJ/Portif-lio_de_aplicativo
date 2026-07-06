@@ -1,0 +1,11 @@
+{
+  "hero": {
+    "eyebrow": "QA automation · desenvolvimento de sistemas",
+    "title_html": "Eu construo o <span class=\"hl\">motor</span>, não só a página.",
+    "lead": "Engenheiro de automação de testes e programador de sistemas. Utilitários em C++, automação em Python/Robot Framework, apps Android em Kotlin. Este próprio blog roda num motor que escrevi em C++."
+  },
+  "footer": {
+    "who": "Leonardo Gonzaga",
+    "meta": "QA automation · C++ · Python · Kotlin"
+  }
+}

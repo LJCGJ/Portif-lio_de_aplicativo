@@ -32,7 +32,64 @@
 
     setupPlayground();
     loadLatestPosts();
+    applySiteTexts();
+    loadProjects();
   });
+
+  /* ---- Textos editáveis (data/site.json) ---- */
+  function applySiteTexts() {
+    // só busca se a página tiver algum alvo
+    var hasTargets = document.getElementById("hero-title") ||
+                     document.getElementById("footer-who");
+    if (!hasTargets) return;
+    fetch("data/site.json")
+      .then(function (r) { return r.json(); })
+      .then(function (s) {
+        var hero = s.hero || {}, footer = s.footer || {};
+        var el;
+        if ((el = document.getElementById("hero-eyebrow")) && hero.eyebrow) el.textContent = hero.eyebrow;
+        if ((el = document.getElementById("hero-title")) && hero.title_html) el.innerHTML = hero.title_html;
+        if ((el = document.getElementById("hero-lead")) && hero.lead) el.textContent = hero.lead;
+        document.querySelectorAll("#footer-who").forEach(function (n) { if (footer.who) n.textContent = footer.who; });
+        document.querySelectorAll("#footer-meta").forEach(function (n) { if (footer.meta) n.textContent = footer.meta; });
+      })
+      .catch(function () { /* mantém o texto padrão do HTML */ });
+  }
+
+  /* ---- Projetos (data/projects.json) ---- */
+  function loadProjects() {
+    var host = document.getElementById("projects-grid");
+    if (!host) return;
+    fetch("data/projects.json")
+      .then(function (r) { return r.json(); })
+      .then(function (list) {
+        if (!list.length) {
+          host.innerHTML = '<p class="mono" style="color:var(--ink-faint)">Nenhum projeto cadastrado.</p>';
+          return;
+        }
+        host.innerHTML = list.map(projectCard).join("");
+      })
+      .catch(function () {
+        host.innerHTML = '<p class="mono">Não consegui carregar os projetos.</p>';
+      });
+  }
+
+  function projectCard(p) {
+    var actions = (p.actions || []).map(function (a) {
+      var cls = a.style === "primary" ? "btn btn-primary" : "btn btn-ghost";
+      var ext = a.external ? ' target="_blank" rel="noopener"' : "";
+      return '<a class="' + cls + '" href="' + esc(a.href) + '"' + ext + ">" + esc(a.label) + "</a>";
+    }).join(" ");
+    return (
+      '<article class="card' + (p.featured ? " feature" : "") + '">' +
+        (p.kicker ? '<p class="kicker">' + esc(p.kicker) + "</p>" : "") +
+        "<h3>" + esc(p.title) + "</h3>" +
+        '<p class="desc">' + esc(p.desc || "") + "</p>" +
+        '<div class="tags">' + (p.tags || []).map(function (t) { return '<span class="tag">' + esc(t) + "</span>"; }).join("") + "</div>" +
+        (actions ? '<div class="card-actions">' + actions + "</div>" : "") +
+      "</article>"
+    );
+  }
 
   /* ---- Playground do motor (home) ---- */
   function setupPlayground() {

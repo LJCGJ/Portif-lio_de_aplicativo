@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Post — Leonardo Gonzaga</title>
+  <title>Downloads — Leonardo Gonzaga</title>
+  <meta name="description" content="Baixe os aplicativos de Leonardo Gonzaga: instaladores para Windows e mais." />
   <script>
     (function () {
       try {
@@ -27,33 +28,42 @@
         <a href="index.html#projetos">Projetos</a>
         <a href="downloads.html">Downloads</a>
         <a href="blog.html">Blog</a>
-        <a class="hide-sm" href="index.html#sobre">Sobre</a>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Mudar tema">☾</button>
       </nav>
     </div>
   </header>
 
-  <main class="wrap">
-    <article id="article" class="article">
-      <p class="mono" style="color:var(--ink-faint)">Carregando…</p>
-    </article>
+  <main class="section">
+    <div class="wrap">
+      <p class="eyebrow">Downloads</p>
+      <div class="section-head">
+        <h2>Aplicativos para baixar</h2>
+      </div>
+      <div id="downloads-list" class="projects" style="grid-template-columns:1fr">
+        <p class="mono" style="color:var(--ink-faint)">Carregando…</p>
+      </div>
+      <p class="engine-cap" style="margin-top:1.4rem">
+        Os arquivos são hospedados nos releases do GitHub, mas o download começa direto daqui.
+      </p>
+    </div>
   </main>
 
   <footer class="footer">
     <div class="wrap footer-grid">
       <div>
-        <div class="who">Leonardo Gonzaga</div>
-        <div class="meta">QA automation · C++ · Python · Kotlin</div>
+        <div class="who" id="footer-who">Leonardo Gonzaga</div>
+        <div class="meta" id="footer-meta">QA automation · C++ · Python · Kotlin</div>
       </div>
       <div class="links">
         <a href="https://github.com/LJCGJ" target="_blank" rel="noopener">GitHub</a>
-        <a href="blog.html">Blog</a>
+        <a href="index.html">Início</a>
+        <a href="admin.html" style="color:var(--ink-faint)">admin</a>
       </div>
     </div>
   </footer>
 
   <script src="js/engine.js"></script>
   <script src="js/main.js"></script>
-  <script src="js/blog.js"></script>
+  <script src="js/downloads.js"></script>
 </body>
 </html>

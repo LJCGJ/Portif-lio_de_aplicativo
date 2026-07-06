@@ -1,0 +1,16 @@
+[
+  {
+    "slug": "motor-em-cpp-e-webassembly",
+    "title": "Por que o motor deste blog é escrito em C++",
+    "date": "2026-07-02",
+    "tags": ["C++", "WebAssembly", "arquitetura"],
+    "summary": "GitHub Pages só serve arquivos estáticos — então onde entra o C++? Ele virou o motor que renderiza o Markdown, compilado para WebAssembly e rodando no navegador."
+  },
+  {
+    "slug": "lancando-o-limpador-de-arquivos",
+    "title": "Lançando o Limpador de Arquivos",
+    "date": "2026-07-01",
+    "tags": ["C++/CLI", "WinForms", "Windows"],
+    "summary": "Um utilitário de limpeza para Windows: varredura de mídia antiga, instaladores abandonados e pastas órfãs, com envio para a lixeira e progresso real."
+  }
+]

@@ -1,0 +1,3 @@
+# artefatos do build do WASM (gerados pelo GitHub Actions / build.sh)
+frontend/wasm/md.js
+frontend/wasm/md.wasm

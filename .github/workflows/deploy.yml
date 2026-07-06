@@ -1,0 +1,53 @@
+name: Build e Deploy (GitHub Pages)
+
+# Compila o motor C++ -> WebAssembly e publica a pasta frontend/ no Pages.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.61
+
+      - name: Compilar motor C++ -> WASM
+        run: |
+          chmod +x backend/build.sh
+          ./backend/build.sh
+          ls -lh frontend/wasm
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empacotar site (frontend/)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar no Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

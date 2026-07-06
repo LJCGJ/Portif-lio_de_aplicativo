@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post — Leonardo Gonzaga</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t) { t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="index.html">LJCGJ<span class="tld">.dev</span> <span class="sub">Leonardo Gonzaga</span></a>
+      <nav class="nav">
+        <a href="index.html#projetos">Projetos</a>
+        <a href="blog.html">Blog</a>
+        <a class="hide-sm" href="index.html#sobre">Sobre</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Mudar tema">☾</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <article id="article" class="article">
+      <p class="mono" style="color:var(--ink-faint)">Carregando…</p>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <div class="who">Leonardo Gonzaga</div>
+        <div class="meta">QA automation · C++ · Python · Kotlin</div>
+      </div>
+      <div class="links">
+        <a href="https://github.com/LJCGJ" target="_blank" rel="noopener">GitHub</a>
+        <a href="blog.html">Blog</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/engine.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/blog.js"></script>
+</body>
+</html>

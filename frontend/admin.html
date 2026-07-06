@@ -111,23 +111,43 @@
   <div id="login-view" class="admin-wrap" hidden>
     <div class="login-card">
       <h1>Entrar no painel</h1>
-      <p>
-        O painel salva as edições como commits no repositório, então a "senha"
-        é um <strong>token de acesso do GitHub</strong> — só você o tem, e ele fica
-        apenas neste navegador.
-      </p>
-      <div class="field">
-        <label for="token">Token de acesso (fine-grained)</label>
-        <input type="password" id="token" autocomplete="off" placeholder="github_pat_…" />
-        <p class="hint">
-          Crie em github.com → Settings → Developer settings → Fine-grained tokens.
-          Repositório: Portif-lio_de_aplicativo · Permissão: Contents → Read and write.
+
+      <!-- Modo Microsoft (ativa quando AUTH está preenchido no admin.js) -->
+      <div id="ms-login-block" hidden>
+        <p>
+          Entre com a sua conta Microsoft. A confirmação chega no
+          <strong>Microsoft Authenticator</strong> (o duplo fator da sua conta).
+        </p>
+        <button class="btn btn-primary" id="btn-ms-login" type="button" style="width:100%;justify-content:center">
+          Entrar com Microsoft
+        </button>
+        <p class="hint" style="margin-top:0.8rem">
+          Só o e-mail autorizado consegue publicar — a verificação é feita fora
+          do site, num serviço protegido.
         </p>
       </div>
-      <div class="field">
-        <label><input type="checkbox" id="remember" /> continuar conectado neste navegador</label>
+
+      <!-- Modo token (padrão enquanto o Worker não está configurado) -->
+      <div id="token-login-block">
+        <p>
+          O painel salva as edições como commits no repositório, então a "senha"
+          é um <strong>token de acesso do GitHub</strong> — só você o tem, e ele fica
+          apenas neste navegador.
+        </p>
+        <div class="field">
+          <label for="token">Token de acesso (fine-grained)</label>
+          <input type="password" id="token" autocomplete="off" placeholder="github_pat_…" />
+          <p class="hint">
+            Crie em github.com → Settings → Developer settings → Fine-grained tokens.
+            Repositório: Portif-lio_de_aplicativo · Permissão: Contents → Read and write.
+          </p>
+        </div>
+        <div class="field">
+          <label><input type="checkbox" id="remember" /> continuar conectado neste navegador</label>
+        </div>
+        <button class="btn btn-primary" id="btn-login" type="button">Entrar</button>
       </div>
-      <button class="btn btn-primary" id="btn-login" type="button">Entrar</button>
+
       <div id="login-status" class="status"></div>
     </div>
   </div>

@@ -76,6 +76,11 @@ O token fica só no seu navegador (e pode ser revogado a qualquer momento no
 GitHub). Ninguém sem um token com acesso de escrita ao repositório consegue
 alterar o site — a página do painel é pública, mas é só uma casca.
 
+**Upgrade opcional — Entrar com Microsoft:** o painel também suporta login com
+a sua conta Microsoft (com a confirmação do Microsoft Authenticator), sem colar
+token nunca mais. Nesse modo, o token do GitHub vive como segredo dentro de um
+Cloudflare Worker gratuito. Guia completo de instalação: `worker/README.md`.
+
 ## Página de downloads
 
 `downloads.html` lista os aplicativos de `frontend/data/downloads.json`. Cada

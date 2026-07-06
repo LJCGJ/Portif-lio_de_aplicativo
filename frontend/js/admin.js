@@ -22,9 +22,23 @@
   var API = "https://api.github.com";
   var TOKEN_KEY = "admin-token";
 
+  /* ===== Entrar com Microsoft (opcional) =====
+   * Preencha os dois campos abaixo para trocar o login por token pelo
+   * "Entrar com Microsoft" (com Authenticator). Guia completo: worker/README.md
+   * Deixe vazios para continuar no modo token. */
+  var AUTH = {
+    workerUrl: "",   // ex.: "https://painel-ljcgj.SEU-USUARIO.workers.dev"
+    msClientId: ""   // Application (client) ID do registro na Microsoft
+  };
+  var MS_MODE = !!(AUTH.workerUrl && AUTH.msClientId);
+  var MSAL_CDN = "https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js";
+  var MS_SCOPES = ["openid", "profile", "email"];
+  var msalApp = null;
+
   var state = {
     token: null,
     user: null,
+    msAccount: null,
     posts: null,      // {json, sha}
     projects: null,
     downloads: null,
@@ -73,17 +87,29 @@
       .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   }
 
-  /* ======================= API do GitHub ======================= */
+  /* ======================= API (GitHub direto ou via Worker) ======================= */
+  function authHeader() {
+    if (!MS_MODE) return Promise.resolve("Bearer " + state.token);
+    return getMsIdToken().then(function (t) { return "Bearer " + t; });
+  }
+
   function gh(path, opts) {
     opts = opts || {};
-    opts.headers = Object.assign({
-      Accept: "application/vnd.github+json",
-      Authorization: "Bearer " + state.token,
-      "X-GitHub-Api-Version": "2022-11-28"
-    }, opts.headers || {});
-    return fetch(API + path, opts).then(function (r) {
-      if (r.status === 401) throw new Error("Token inválido ou expirado.");
-      if (r.status === 403) throw new Error("Sem permissão (o token tem Contents: read/write neste repositório?).");
+    var base = MS_MODE ? AUTH.workerUrl.replace(/\/+$/, "") : API;
+    return authHeader().then(function (auth) {
+      opts.headers = Object.assign({
+        Accept: "application/vnd.github+json",
+        Authorization: auth,
+        "X-GitHub-Api-Version": "2022-11-28"
+      }, opts.headers || {});
+      return fetch(base + path, opts);
+    }).then(function (r) {
+      if (r.status === 401) throw new Error(MS_MODE ? "Sessão expirada — entre novamente." : "Token inválido ou expirado.");
+      if (r.status === 403) {
+        return r.json().catch(function () { return {}; }).then(function (b) {
+          throw new Error(b.message || "Sem permissão.");
+        });
+      }
       if (r.status === 404 && opts._allow404) return null;
       if (!r.ok) {
         return r.json().catch(function () { return {}; }).then(function (b) {
@@ -91,6 +117,49 @@
         });
       }
       return r.status === 204 ? null : r.json();
+    });
+  }
+
+  /* ======================= Entrar com Microsoft ======================= */
+  function loadMsal() {
+    if (msalApp) return Promise.resolve(msalApp);
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = MSAL_CDN;
+      s.onload = function () {
+        try {
+          msalApp = new msal.PublicClientApplication({
+            auth: {
+              clientId: AUTH.msClientId,
+              authority: "https://login.microsoftonline.com/consumers",
+              redirectUri: window.location.origin + window.location.pathname
+            },
+            cache: { cacheLocation: "localStorage" }
+          });
+          resolve(msalApp);
+        } catch (e) { reject(e); }
+      };
+      s.onerror = function () { reject(new Error("Não consegui carregar o login da Microsoft.")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function getMsIdToken() {
+    return loadMsal().then(function (app) {
+      var accounts = app.getAllAccounts();
+      if (!accounts.length) throw new Error("Sessão expirada — entre novamente.");
+      return app.acquireTokenSilent({ scopes: MS_SCOPES, account: accounts[0] })
+        .then(function (res) { return res.idToken; });
+    });
+  }
+
+  function msLogin() {
+    setStatus("login-status", "busy", "Abrindo o login da Microsoft…");
+    return loadMsal().then(function (app) {
+      return app.loginPopup({ scopes: MS_SCOPES, prompt: "select_account" });
+    }).then(function (res) {
+      state.msAccount = res.account;
+      return verify();
     });
   }
 
@@ -124,6 +193,14 @@
 
   /* ======================= login ======================= */
   function tryStoredToken() {
+    if (MS_MODE) {
+      return loadMsal().then(function (app) {
+        var accounts = app.getAllAccounts();
+        if (!accounts.length) return Promise.reject();
+        state.msAccount = accounts[0];
+        return verify();
+      });
+    }
     var t = null;
     try { t = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY); } catch (e) {}
     if (t) { state.token = t; return verify(); }
@@ -145,13 +222,17 @@
   function showLogin() {
     $("login-view").hidden = false;
     $("admin-view").hidden = true;
+    $("ms-login-block").hidden = !MS_MODE;
+    $("token-login-block").hidden = MS_MODE;
   }
 
   function showAdmin() {
     $("login-view").hidden = true;
     $("admin-view").hidden = false;
-    $("admin-who").textContent =
-      "conectado como " + (state.user.login || "?") + " · " + OWNER + "/" + REPO;
+    var who = MS_MODE && state.msAccount
+      ? (state.msAccount.username || state.msAccount.name || "?")
+      : (state.user && state.user.login) || "?";
+    $("admin-who").textContent = "conectado como " + who + " · " + OWNER + "/" + REPO;
     loadAll();
   }
 
@@ -550,9 +631,26 @@
       if (e.key === "Enter") $("btn-login").click();
     });
 
+    var msBtn = $("btn-ms-login");
+    if (msBtn) {
+      msBtn.addEventListener("click", function () {
+        msLogin().then(showAdmin).catch(function (err) {
+          if (err && /user_cancelled|popup_window/i.test(err.errorCode || "")) {
+            setStatus("login-status", "err", "Login cancelado.");
+          } else {
+            setStatus("login-status", "err", (err && err.message) || "Não consegui entrar.");
+          }
+        });
+      });
+    }
+
     $("btn-logout").addEventListener("click", function () {
       try { sessionStorage.removeItem(TOKEN_KEY); localStorage.removeItem(TOKEN_KEY); } catch (e) {}
       state.token = null;
+      state.msAccount = null;
+      if (MS_MODE && msalApp) {
+        msalApp.logoutPopup({ account: msalApp.getAllAccounts()[0] }).catch(function () {});
+      }
       showLogin();
     });
 

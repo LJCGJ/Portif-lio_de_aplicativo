@@ -27,8 +27,8 @@
    * "Entrar com Microsoft" (com Authenticator). Guia completo: worker/README.md
    * Deixe vazios para continuar no modo token. */
   var AUTH = {
-    workerUrl: "",   // ex.: "https://painel-ljcgj.SEU-USUARIO.workers.dev"
-    msClientId: ""   // Application (client) ID do registro na Microsoft
+    workerUrl: "https://painel-ljcgj.colegial505.workers.dev",
+    msClientId: "a902d627-13c6-4014-9032-a9773e47c578"
   };
   var MS_MODE = !!(AUTH.workerUrl && AUTH.msClientId);
   var MSAL_CDN = "https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js";

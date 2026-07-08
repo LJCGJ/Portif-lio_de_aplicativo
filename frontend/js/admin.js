@@ -97,11 +97,16 @@
     opts = opts || {};
     var base = MS_MODE ? AUTH.workerUrl.replace(/\/+$/, "") : API;
     return authHeader().then(function (auth) {
-      opts.headers = Object.assign({
-        Accept: "application/vnd.github+json",
-        Authorization: auth,
-        "X-GitHub-Api-Version": "2022-11-28"
-      }, opts.headers || {});
+      // Em modo Microsoft, o guardião já adiciona Accept e X-GitHub-Api-Version
+      // ao repassar para o GitHub — menos headers = preflight de CORS simples.
+      var baseHeaders = MS_MODE
+        ? { Authorization: auth }
+        : {
+            Accept: "application/vnd.github+json",
+            Authorization: auth,
+            "X-GitHub-Api-Version": "2022-11-28"
+          };
+      opts.headers = Object.assign(baseHeaders, opts.headers || {});
       return fetch(base + path, opts);
     }).then(function (r) {
       if (r.status === 401) throw new Error(MS_MODE ? "Sessão expirada — entre novamente." : "Token inválido ou expirado.");

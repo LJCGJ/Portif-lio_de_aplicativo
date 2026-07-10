@@ -421,3 +421,79 @@ a:hover { text-decoration: underline; }
 
 /* Foco visível (acessibilidade) */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+
+/* ===================== Carrossel de destaques ===================== */
+.featured { padding-top: 0; }
+.car-nav { display: flex; gap: .5rem; }
+.car-btn {
+  width: 2.4rem; height: 2.4rem;
+  border: 1px solid var(--line); border-radius: .6rem;
+  background: var(--surface); color: var(--ink);
+  font-family: var(--mono); font-size: 1rem; cursor: pointer;
+  transition: border-color .15s, transform .15s, color .15s;
+}
+.car-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+.car-btn:active { transform: translateY(0); }
+
+.car-viewport { position: relative; }
+.car-viewport::before, .car-viewport::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 2.5rem; z-index: 2; pointer-events: none;
+}
+.car-viewport::before { left: 0; background: linear-gradient(90deg, var(--paper), transparent); }
+.car-viewport::after { right: 0; background: linear-gradient(-90deg, var(--paper), transparent); }
+
+.car-track {
+  display: flex; gap: 1rem;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: .35rem .2rem 1rem;
+  scrollbar-width: none;
+  outline: none;
+}
+.car-track::-webkit-scrollbar { display: none; }
+.car-track:focus-visible { box-shadow: 0 0 0 2px var(--accent); border-radius: .8rem; }
+
+.car-slide {
+  flex: 0 0 min(430px, 86%);
+  scroll-snap-align: start;
+  display: flex;
+}
+.car-slide .card {
+  width: 100%;
+  display: flex; flex-direction: column;
+  border-top: 3px solid var(--accent);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.car-slide .card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,.10); }
+.car-slide .card .desc { flex: 1; }
+
+.car-dots { display: flex; gap: .45rem; justify-content: center; margin-top: .1rem; }
+.car-dot {
+  width: .55rem; height: .55rem; border-radius: 50%;
+  border: 1px solid var(--ink-faint); background: transparent;
+  cursor: pointer; padding: 0;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.car-dot.on { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
+
+/* ===================== Entrada do hero (uma vez, discreta) ===================== */
+@media (prefers-reduced-motion: no-preference) {
+  .hero .eyebrow, .hero h1, .hero .lead, .hero .hero-actions, .hero .engine, .hero .engine-cap {
+    animation: rise .5s ease both;
+  }
+  .hero h1 { animation-delay: .06s; }
+  .hero .lead { animation-delay: .12s; }
+  .hero .hero-actions { animation-delay: .18s; }
+  .hero .engine { animation-delay: .22s; }
+  .hero .engine-cap { animation-delay: .3s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  .hero .hl {
+    background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 100% / 0% 3px;
+    animation: sweep .7s .5s ease forwards;
+  }
+  @keyframes sweep { to { background-size: 100% 3px; } }
+}
+.hero .hl { padding-bottom: 2px; }

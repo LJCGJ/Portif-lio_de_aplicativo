@@ -1,11 +1,22 @@
 {
   "hero": {
-    "eyebrow": "QA automation · desenvolvimento de sistemas",
-    "title_html": "Eu construo o <span class=\"hl\">motor</span>, não só a página.",
-    "lead": "Engenheiro de automação de testes e programador de sistemas. Utilitários em C++, automação em Python/Robot Framework, apps Android em Kotlin. Este próprio blog roda num motor que escrevi em C++."
+    "eyebrow": "automação de testes · ferramentas em C++",
+    "title_html": "Testo software de dia. <span class=\"hl\">De noite, construo o meu.</span>",
+    "lead": "Sou o Leonardo. Trabalho com automação de testes (Robot Framework + Python) e, nas horas vagas, faço ferramentas em C++ — como o motor que renderiza este site, ali do lado, rodando agora no seu navegador.",
+    "btn_primary": "Ver projetos",
+    "btn_github": "GitHub ↗"
+  },
+  "playground": {
+    "caption": "Pode digitar à vontade: o preview da direita sai de um motor em C++ compilado para WebAssembly — sem servidor, sem biblioteca pronta."
+  },
+  "sections": {
+    "featured_title": "Em destaque",
+    "projects_title": "Todos os projetos",
+    "blog_title": "Do blog"
   },
   "footer": {
     "who": "Leonardo Gonzaga",
-    "meta": "QA automation · C++ · Python · Kotlin"
+    "meta": "QA automation · C++ · Python · Kotlin",
+    "note": "Feito à mão: HTML, CSS, JS e um motor de Markdown em C++ → WebAssembly. Código aberto."
   }
 }

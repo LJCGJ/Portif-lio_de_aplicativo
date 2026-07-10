@@ -444,6 +444,7 @@ a:hover { text-decoration: underline; }
 .car-viewport::after { right: 0; background: linear-gradient(-90deg, var(--paper), transparent); }
 
 .car-track {
+  position: relative; /* offsetLeft dos slides passa a ser relativo ao track (setas!) */
   display: flex; gap: 1rem;
   overflow-x: auto; scroll-snap-type: x mandatory;
   padding: .35rem .2rem 1rem;

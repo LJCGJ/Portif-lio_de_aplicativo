@@ -35,7 +35,7 @@
       margin-bottom: 0.35rem;
     }
     .field input[type="text"], .field input[type="password"], .field input[type="date"],
-    .field textarea, .field select {
+    .field input[type="number"], .field textarea, .field select {
       width: 100%; padding: 0.6em 0.75em;
       border: 1px solid var(--line); border-radius: var(--r-btn);
       background: var(--paper); color: var(--ink);
@@ -136,7 +136,7 @@
         </p>
         <div class="field">
           <label for="token">Token de acesso (fine-grained)</label>
-          <input type="text" id="token" autocomplete="off" spellcheck="false" placeholder="cole aqui seu token de acesso" />
+          <input type="text" id="token" autocomplete="off" placeholder="cole aqui seu token de acesso" />
           <p class="hint">
             Crie em github.com → Settings → Developer settings → Fine-grained tokens.
             Repositório: Portif-lio_de_aplicativo · Permissão: Contents → Read and write.
@@ -260,6 +260,19 @@
           </div>
           <div class="row2">
             <div class="field">
+              <label for="pr-carousel">Mostrar no carrossel da home</label>
+              <select id="pr-carousel">
+                <option value="false">Não</option>
+                <option value="true">Sim</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="pr-order">Posição no carrossel (1 = primeiro)</label>
+              <input type="number" id="pr-order" min="1" step="1" placeholder="1" />
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
               <label for="pr-code">Link do código (opcional)</label>
               <input type="text" id="pr-code" placeholder="https://github.com/LJCGJ/…" />
             </div>
@@ -354,6 +367,40 @@
         <div class="field">
           <label for="t-lead">Parágrafo de apresentação</label>
           <textarea id="t-lead"></textarea>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="t-btn-primary">Botão principal do topo</label>
+            <input type="text" id="t-btn-primary" placeholder="Ver projetos" />
+          </div>
+          <div class="field">
+            <label for="t-btn-github">Botão do GitHub</label>
+            <input type="text" id="t-btn-github" placeholder="GitHub ↗" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="t-play-cap">Legenda do playground (embaixo do motor)</label>
+          <textarea id="t-play-cap"></textarea>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="t-sec-featured">Título da seção do carrossel</label>
+            <input type="text" id="t-sec-featured" placeholder="Em destaque" />
+          </div>
+          <div class="field">
+            <label for="t-sec-projects">Título da lista de projetos</label>
+            <input type="text" id="t-sec-projects" placeholder="Todos os projetos" />
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="t-sec-blog">Título da seção do blog</label>
+            <input type="text" id="t-sec-blog" placeholder="Do blog" />
+          </div>
+          <div class="field">
+            <label for="t-footer-note">Nota do rodapé</label>
+            <input type="text" id="t-footer-note" placeholder="Feito à mão…" />
+          </div>
         </div>
       </fieldset>
       <fieldset>

@@ -29,7 +29,7 @@
     <div class="wrap">
       <a class="brand" href="index.html">LJCGJ<span class="tld">.dev</span> <span class="sub">Leonardo Gonzaga</span></a>
       <nav class="nav">
-        <a href="#projetos">Projetos</a>
+        <a href="#destaques">Projetos</a>
         <a href="downloads.html">Downloads</a>
         <a href="blog.html">Blog</a>
         <a class="hide-sm" href="#sobre">Sobre</a>
@@ -42,16 +42,16 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow" id="hero-eyebrow">QA automation · desenvolvimento de sistemas</p>
-        <h1 id="hero-title">Eu construo o <span class="hl">motor</span>, não só a página.</h1>
+        <p class="eyebrow" id="hero-eyebrow">automação de testes · ferramentas em C++</p>
+        <h1 id="hero-title">Testo software de dia. <span class="hl">De noite, construo o meu.</span></h1>
         <p class="lead" id="hero-lead">
-          Engenheiro de automação de testes e programador de sistemas.
-          Utilitários em C++, automação em Python/Robot Framework, apps Android em Kotlin.
-          Este próprio blog roda num motor que escrevi em C++.
+          Sou o Leonardo. Trabalho com automação de testes (Robot Framework + Python)
+          e, nas horas vagas, faço ferramentas em C++ — como o motor que renderiza
+          este site, ali do lado, rodando agora no seu navegador.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#projetos">Ver projetos</a>
-          <a class="btn btn-ghost" href="https://github.com/LJCGJ" target="_blank" rel="noopener">GitHub ↗</a>
+          <a class="btn btn-primary" id="hero-btn-primary" href="#destaques">Ver projetos</a>
+          <a class="btn btn-ghost" id="hero-btn-github" href="https://github.com/LJCGJ" target="_blank" rel="noopener">GitHub ↗</a>
         </div>
       </div>
 
@@ -70,16 +70,38 @@
             <div id="engine-preview" class="engine-preview prose"></div>
           </div>
         </div>
-        <p class="engine-cap">Digite à esquerda. O C++ compilado para WebAssembly renderiza à direita, no seu navegador.</p>
+        <p class="engine-cap" id="engine-cap">Pode digitar à vontade: o preview da direita sai de um motor em C++ compilado para WebAssembly — sem servidor, sem biblioteca pronta.</p>
       </div>
     </div>
+  </section>
+
+
+  <!-- ===================== DESTAQUES (carrossel) ===================== -->
+  <section class="section featured" id="destaques">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="sec-featured-title">Em destaque</h2>
+        <div class="car-nav" aria-hidden="false">
+          <button class="car-btn" id="car-prev" type="button" aria-label="Projeto anterior">←</button>
+          <button class="car-btn" id="car-next" type="button" aria-label="Próximo projeto">→</button>
+        </div>
+      </div>
+    </div>
+    <div class="car-viewport">
+      <div class="wrap">
+        <div class="car-track" id="car-track" tabindex="0" aria-label="Projetos em destaque — role para o lado">
+          <p class="mono" style="color:var(--ink-faint)">Carregando destaques…</p>
+        </div>
+      </div>
+    </div>
+    <div class="wrap"><div class="car-dots" id="car-dots" role="tablist" aria-label="Ir para o destaque"></div></div>
   </section>
 
   <!-- ===================== PROJETOS ===================== -->
   <section class="section" id="projetos">
     <div class="wrap">
       <div class="section-head">
-        <h2>Projetos</h2>
+        <h2 id="sec-projects-title">Todos os projetos</h2>
         <a class="link" href="https://github.com/LJCGJ" target="_blank" rel="noopener">todos no GitHub ↗</a>
       </div>
 
@@ -93,7 +115,7 @@
   <section class="section" id="blog">
     <div class="wrap">
       <div class="section-head">
-        <h2>Do blog</h2>
+        <h2 id="sec-blog-title">Do blog</h2>
         <a class="link" href="blog.html">todos os posts →</a>
       </div>
       <div id="home-posts" class="posts"></div>
@@ -114,7 +136,7 @@
         <a href="admin.html" style="color:var(--ink-faint)">admin</a>
       </div>
     </div>
-    <div class="wrap"><p class="meta" style="margin-top:1rem">Motor de Markdown em C++ → WebAssembly. Código aberto.</p></div>
+    <div class="wrap"><p class="meta" style="margin-top:1rem" id="footer-note">Feito à mão: HTML, CSS, JS e um motor de Markdown em C++ → WebAssembly. Código aberto.</p></div>
   </footer>
 
   <script src="js/engine.js"></script>

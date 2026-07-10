@@ -1,8 +1,8 @@
 {
   "hero": {
-    "eyebrow": "automação de testes · ferramentas em C++",
-    "title_html": "Testo software de dia. <span class=\"hl\">De noite, construo o meu.</span>",
-    "lead": "Sou o Leonardo. Trabalho com automação de testes (Robot Framework + Python) e, nas horas vagas, faço ferramentas em C++ — como o motor que renderiza este site, ali do lado, rodando agora no seu navegador.",
+    "eyebrow": "Leonardo Gonzaga · portfólio",
+    "title_html": "QA automation de dia. <span class=\"hl\">C++ de noite.</span>",
+    "lead": "No trabalho, automatizo testes com Robot Framework e Python. Fora dele, construo minhas próprias ferramentas em C++ — o motor que renderiza este site é uma delas. Experimente aí do lado.",
     "btn_primary": "Ver projetos",
     "btn_github": "GitHub ↗"
   },

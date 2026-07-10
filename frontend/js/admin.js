@@ -97,8 +97,9 @@
     opts = opts || {};
     var base = MS_MODE ? AUTH.workerUrl.replace(/\/+$/, "") : API;
     return authHeader().then(function (auth) {
-      // Em modo Microsoft, o guardião já adiciona Accept e X-GitHub-Api-Version
-      // ao repassar para o GitHub — menos headers = preflight de CORS simples.
+      // Em modo Microsoft, o Worker ("guardião") já adiciona Accept e
+      // X-GitHub-Api-Version ao repassar para o GitHub — enviar menos headers
+      // daqui mantém o preflight de CORS simples e à prova de bloqueio.
       var baseHeaders = MS_MODE
         ? { Authorization: auth }
         : {
@@ -401,7 +402,7 @@
     var list = state.projects.data;
     host.innerHTML = list.length ? list.map(function (p, i) {
       return '<div class="item-row">' +
-        '<div class="grow"><div class="t">' + esc(p.title) + (p.featured ? ' <span class="tag">destaque</span>' : "") + '</div>' +
+        '<div class="grow"><div class="t">' + esc(p.title) + (p.featured ? ' <span class="tag">destaque</span>' : "") + (p.carousel ? ' <span class="tag">carrossel' + (p.order ? " #" + p.order : "") + '</span>' : "") + '</div>' +
         '<div class="s">' + esc(p.kicker || "") + "</div></div>" +
         '<button class="btn btn-ghost btn-sm" data-i="' + i + '" data-mv="-1" type="button" ' + (i === 0 ? "disabled" : "") + '>↑</button>' +
         '<button class="btn btn-ghost btn-sm" data-i="' + i + '" data-mv="1" type="button" ' + (i === list.length - 1 ? "disabled" : "") + '>↓</button>' +
@@ -431,6 +432,8 @@
     $("pr-desc").value = p.desc || "";
     $("pr-tags").value = (p.tags || []).join(", ");
     $("pr-featured").value = p.featured ? "true" : "false";
+    $("pr-carousel").value = p.carousel ? "true" : "false";
+    $("pr-order").value = p.order || "";
     var code = "", dl = "";
     (p.actions || []).forEach(function (a) {
       if (a.style === "primary") dl = a.href; else code = a.href;
@@ -443,8 +446,9 @@
 
   function newProject() {
     state.editingProject = null;
-    ["pr-title", "pr-kicker", "pr-desc", "pr-tags", "pr-code", "pr-download"].forEach(function (id) { $(id).value = ""; });
+    ["pr-title", "pr-kicker", "pr-desc", "pr-tags", "pr-code", "pr-download", "pr-order"].forEach(function (id) { $(id).value = ""; });
     $("pr-featured").value = "false";
+    $("pr-carousel").value = "true";
     $("btn-delete-project").hidden = true;
     $("project-editor").hidden = false;
   }
@@ -459,6 +463,8 @@
     }
     return {
       featured: $("pr-featured").value === "true",
+      carousel: $("pr-carousel").value === "true",
+      order: parseInt($("pr-order").value, 10) || undefined,
       kicker: $("pr-kicker").value.trim(),
       title: $("pr-title").value.trim(),
       desc: $("pr-desc").value.trim(),
@@ -585,6 +591,13 @@
     $("t-eyebrow").value = (s.hero && s.hero.eyebrow) || "";
     $("t-title").value = (s.hero && s.hero.title_html) || "";
     $("t-lead").value = (s.hero && s.hero.lead) || "";
+    $("t-btn-primary").value = (s.hero && s.hero.btn_primary) || "";
+    $("t-btn-github").value = (s.hero && s.hero.btn_github) || "";
+    $("t-play-cap").value = (s.playground && s.playground.caption) || "";
+    $("t-sec-featured").value = (s.sections && s.sections.featured_title) || "";
+    $("t-sec-projects").value = (s.sections && s.sections.projects_title) || "";
+    $("t-sec-blog").value = (s.sections && s.sections.blog_title) || "";
+    $("t-footer-note").value = (s.footer && s.footer.note) || "";
     $("t-who").value = (s.footer && s.footer.who) || "";
     $("t-meta").value = (s.footer && s.footer.meta) || "";
   }
@@ -594,11 +607,22 @@
       hero: {
         eyebrow: $("t-eyebrow").value.trim(),
         title_html: $("t-title").value.trim(),
-        lead: $("t-lead").value.trim()
+        lead: $("t-lead").value.trim(),
+        btn_primary: $("t-btn-primary").value.trim(),
+        btn_github: $("t-btn-github").value.trim()
+      },
+      playground: {
+        caption: $("t-play-cap").value.trim()
+      },
+      sections: {
+        featured_title: $("t-sec-featured").value.trim(),
+        projects_title: $("t-sec-projects").value.trim(),
+        blog_title: $("t-sec-blog").value.trim()
       },
       footer: {
         who: $("t-who").value.trim(),
-        meta: $("t-meta").value.trim()
+        meta: $("t-meta").value.trim(),
+        note: $("t-footer-note").value.trim()
       }
     };
     state.site.data = s;

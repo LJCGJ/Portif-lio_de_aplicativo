@@ -46,10 +46,19 @@
       .then(function (r) { return r.json(); })
       .then(function (s) {
         var hero = s.hero || {}, footer = s.footer || {};
-        var el;
-        if ((el = document.getElementById("hero-eyebrow")) && hero.eyebrow) el.textContent = hero.eyebrow;
-        if ((el = document.getElementById("hero-title")) && hero.title_html) el.innerHTML = hero.title_html;
-        if ((el = document.getElementById("hero-lead")) && hero.lead) el.textContent = hero.lead;
+        var play = s.playground || {}, secs = s.sections || {};
+        function setText(id, v) { var el = document.getElementById(id); if (el && v) el.textContent = v; }
+        setText("hero-eyebrow", hero.eyebrow);
+        var t = document.getElementById("hero-title");
+        if (t && hero.title_html) t.innerHTML = hero.title_html;
+        setText("hero-lead", hero.lead);
+        setText("hero-btn-primary", hero.btn_primary);
+        setText("hero-btn-github", hero.btn_github);
+        setText("engine-cap", play.caption);
+        setText("sec-featured-title", secs.featured_title);
+        setText("sec-projects-title", secs.projects_title);
+        setText("sec-blog-title", secs.blog_title);
+        setText("footer-note", footer.note);
         document.querySelectorAll("#footer-who").forEach(function (n) { if (footer.who) n.textContent = footer.who; });
         document.querySelectorAll("#footer-meta").forEach(function (n) { if (footer.meta) n.textContent = footer.meta; });
       })
@@ -68,6 +77,7 @@
           return;
         }
         host.innerHTML = list.map(projectCard).join("");
+        buildCarousel(list);
       })
       .catch(function () {
         host.innerHTML = '<p class="mono">Não consegui carregar os projetos.</p>';
@@ -89,6 +99,78 @@
         (actions ? '<div class="card-actions">' + actions + "</div>" : "") +
       "</article>"
     );
+  }
+
+
+  /* ---- Carrossel de destaques (home) ---- */
+  function buildCarousel(list) {
+    var track = document.getElementById("car-track");
+    if (!track) return;
+    var section = document.getElementById("destaques");
+
+    var featured = list
+      .map(function (p, i) { return { p: p, i: i }; })
+      .filter(function (x) { return x.p.carousel; })
+      .sort(function (a, b) { return (a.p.order || 99) - (b.p.order || 99) || a.i - b.i; })
+      .map(function (x) { return x.p; });
+    if (!featured.length) featured = list.slice(0, 3); // reserva: primeiros projetos
+
+    track.innerHTML = featured.map(function (p) {
+      return '<div class="car-slide">' + projectCard(p) + "</div>";
+    }).join("");
+
+    var dotsHost = document.getElementById("car-dots");
+    var slides = Array.prototype.slice.call(track.children);
+    if (dotsHost) {
+      dotsHost.innerHTML = slides.map(function (_, i) {
+        return '<button class="car-dot" type="button" aria-label="Destaque ' + (i + 1) + '"></button>';
+      }).join("");
+    }
+    var dots = dotsHost ? Array.prototype.slice.call(dotsHost.children) : [];
+
+    function current() {
+      var x = track.scrollLeft, best = 0, dist = Infinity;
+      slides.forEach(function (s, i) {
+        var d = Math.abs(s.offsetLeft - x);
+        if (d < dist) { dist = d; best = i; }
+      });
+      return best;
+    }
+    function goTo(i) {
+      i = Math.max(0, Math.min(slides.length - 1, i));
+      track.scrollTo({ left: slides[i].offsetLeft, behavior: "smooth" });
+    }
+    function paint() {
+      var c = current();
+      dots.forEach(function (d, i) { d.classList.toggle("on", i === c); });
+    }
+    dots.forEach(function (d, i) { d.addEventListener("click", function () { goTo(i); pause(); }); });
+
+    var prev = document.getElementById("car-prev");
+    var next = document.getElementById("car-next");
+    if (prev) prev.addEventListener("click", function () { goTo(current() - 1); pause(); });
+    if (next) next.addEventListener("click", function () { goTo(current() + 1); pause(); });
+
+    var t;
+    track.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(paint, 80); }, { passive: true });
+    paint();
+
+    /* auto-avanço gentil: para com o mouse em cima, toque ou preferência de menos movimento */
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var timer = null, idle = 0;
+    function tick() {
+      if (document.hidden) return;
+      var c = current();
+      goTo(c + 1 >= slides.length ? 0 : c + 1);
+    }
+    function play() { if (!reduced && slides.length > 1 && !timer) timer = setInterval(tick, 7000); }
+    function pause() { clearInterval(timer); timer = null; clearTimeout(idle); idle = setTimeout(play, 20000); }
+    if (section) {
+      section.addEventListener("mouseenter", pause);
+      section.addEventListener("touchstart", pause, { passive: true });
+      section.addEventListener("focusin", pause);
+    }
+    play();
   }
 
   /* ---- Playground do motor (home) ---- */

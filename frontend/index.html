@@ -47,7 +47,7 @@
         <p class="lead" id="hero-lead">
           No trabalho, automatizo testes com Robot Framework e Python.
           Fora dele, construo minhas próprias ferramentas em C++ — o motor
-          que renderiza este site é uma delas. Experimente aí do lado.
+          que renderiza o feed aí do lado é uma delas.
         </p>
         <div class="hero-actions">
           <a class="btn btn-primary" id="hero-btn-primary" href="#destaques">Ver projetos</a>
@@ -55,37 +55,26 @@
         </div>
       </div>
 
-      <!-- Assinatura: o motor C++/WASM rodando ao vivo -->
+      <!-- Feed autônomo: curiosidades + GitHub + blog, renderizado pelo motor Wasm -->
       <div>
-        <div class="engine" aria-label="Playground do motor de Markdown em C++/WebAssembly">
-          <div class="engine-head">
-            <span id="engine-dot" class="dot"></span>
-            <span>motor:</span>
-            <span id="engine-status">carregando…</span>
-            <span class="spacer"></span>
-            <span>markdown → html</span>
-          </div>
-          <div class="engine-body">
-            <textarea id="engine-editor" spellcheck="false" aria-label="Digite Markdown"></textarea>
-            <div id="engine-preview" class="engine-preview prose"></div>
-          </div>
-        </div>
-        <p class="engine-cap" id="engine-cap">Pode digitar à vontade: o preview da direita sai de um motor em C++ compilado para WebAssembly — sem servidor, sem biblioteca pronta.</p>
-
-        <!-- Feed autônomo: curiosidades + GitHub + blog, renderizado pelo motor Wasm -->
         <div class="feed" aria-label="Feed de curiosidades e status dos softwares">
-          <div class="feed-head">
-            <span id="feed-dot" class="dot"></span>
-            <span>feed:</span>
-            <span id="feed-status">carregando…</span>
-            <span class="spacer"></span>
-            <span>atualiza sozinho</span>
+          <div class="feed-title">
+            <span class="ft-icon">⚙️</span>
+            <strong>Feed de Curiosidades e Status dos Softwares (Motor Wasm Ativo)</strong>
           </div>
-          <div id="feed-body" class="feed-body prose">
-            <p class="mono" style="color:var(--ink-faint)">Buscando novidades…</p>
+          <div id="feed-body" class="feed-body">
+            <p class="mono" style="color:#6B7585">Buscando novidades…</p>
           </div>
         </div>
-        <p class="engine-cap">Curiosidades, releases do GitHub e posts do blog — reunidos e ordenados por data, sem servidor.</p>
+
+        <div class="feed-highlight">
+          <div class="fh-badge" aria-hidden="true">WA</div>
+          <div class="fh-text">
+            <strong>Curiosidade em Destaque</strong><br />
+            Você sabia? O motor Wasm permite rodar código C++ complexo em segundos no seu navegador.
+          </div>
+        </div>
+        <p class="engine-cap">Processamento de feed local (sem servidor) pelo motor md.wasm C++ → Wasm. Aviso Importante: Todo processamento é local.</p>
       </div>
     </div>
   </section>

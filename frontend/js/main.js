@@ -30,7 +30,6 @@
       });
     }
 
-    setupPlayground();
     loadLatestPosts();
     applySiteTexts();
     loadProjects();
@@ -47,7 +46,7 @@
       .then(function (r) { return r.json(); })
       .then(function (s) {
         var hero = s.hero || {}, footer = s.footer || {};
-        var play = s.playground || {}, secs = s.sections || {};
+        var secs = s.sections || {};
         function setText(id, v) { var el = document.getElementById(id); if (el && v) el.textContent = v; }
         setText("hero-eyebrow", hero.eyebrow);
         var t = document.getElementById("hero-title");
@@ -55,7 +54,6 @@
         setText("hero-lead", hero.lead);
         setText("hero-btn-primary", hero.btn_primary);
         setText("hero-btn-github", hero.btn_github);
-        setText("engine-cap", play.caption);
         setText("sec-featured-title", secs.featured_title);
         setText("sec-projects-title", secs.projects_title);
         setText("sec-blog-title", secs.blog_title);
@@ -175,35 +173,6 @@
     play();
   }
 
-  /* ---- Playground do motor (home) ---- */
-  function setupPlayground() {
-    var editor = document.getElementById("engine-editor");
-    var preview = document.getElementById("engine-preview");
-    var status = document.getElementById("engine-status");
-    var dot = document.getElementById("engine-dot");
-    if (!editor || !preview) return;
-
-    if (!editor.value) {
-      editor.value =
-        "# Olá 👋\n\nEste bloco foi renderizado por um motor em **C++**,\n" +
-        "compilado para **WebAssembly** e rodando aqui no seu navegador.\n\n" +
-        "- listas\n- `código inline`\n- [links](https://github.com/LJCGJ)\n\n" +
-        "> Markdown entra, HTML sai.";
-    }
-
-    window.MdEngine.ready.then(function (engine) {
-      if (status) status.textContent = engine.name;
-      if (dot && engine.wasm) dot.classList.add("live");
-      var render = function () { preview.innerHTML = engine.render(editor.value); };
-      render();
-      var t;
-      editor.addEventListener("input", function () {
-        clearTimeout(t);
-        t = setTimeout(render, 90);
-      });
-    });
-  }
-
   /* ---- Feed de curiosidades + status (home) ---------------------------- *
    * Autônomo: junta 3 fontes em paralelo, mescla por data e renderiza com  *
    * o MESMO motor C++/Wasm (monta Markdown e passa por engine.render).      *
@@ -217,9 +186,6 @@
   function loadFeed() {
     var host = document.getElementById("feed-body");
     if (!host) return;
-    var status = document.getElementById("feed-status");
-    var dot = document.getElementById("feed-dot");
-
     // resolve mesmo se uma fonte cair (nunca rejeita)
     function soft(promise, onOk) {
       return promise.then(function (r) {
@@ -278,15 +244,23 @@
         return;
       }
 
-      // monta UMA string Markdown e deixa o motor C++/Wasm renderizar
-      var md = items.map(function (it) {
-        return "**[" + it.tag + "]** " + it.text + "  \n_" + feedWhen(it.ts) + "_";
-      }).join("\n\n");
-
+      // cada item: cabeçalho estruturado + texto renderizado pelo motor C++/Wasm
       window.MdEngine.ready.then(function (engine) {
-        if (status) status.textContent = engine.name;
-        if (dot && engine.wasm) dot.classList.add("live");
-        host.innerHTML = engine.render(md);
+        host.innerHTML = items.map(function (it) {
+          var m = feedMeta(it.tag);
+          return (
+            '<div class="feed-item">' +
+              '<div class="fi-head">' +
+                '<span class="fi-icon">' + m.icon + '</span>' +
+                '<span class="fi-tags ' + m.cls + '">' +
+                  m.tags.map(function (t) { return "[" + esc(t) + "]"; }).join(" ") +
+                '</span>' +
+                '<span class="fi-date">Data: ' + feedWhen(it.ts) + '</span>' +
+              '</div>' +
+              '<div class="fi-text">' + engine.render(it.text) + '</div>' +
+            '</div>'
+          );
+        }).join("");
       });
     });
   }
@@ -328,13 +302,26 @@
     return String(s || "").replace(/[\\`*_\[\]()<>#]/g, "\\$&");
   }
 
-  // "hoje", "ontem", "há N dias" ou data curta
+  // ícone e etiquetas de cada categoria do feed (estilo do painel)
+  function feedMeta(tag) {
+    switch (tag) {
+      case "Curiosidade": return { icon: "💡", tags: ["Lâmpada", "Curiosidade"], cls: "t-amber" };
+      case "Status":      return { icon: "🖥️", tags: ["Chip", "Status"],        cls: "t-green" };
+      case "Release":     return { icon: "🚀", tags: ["Release", "Status"],      cls: "t-green" };
+      case "Código":      return { icon: "🛠️", tags: ["C++", "Software"],       cls: "t-blue" };
+      case "Repo":        return { icon: "📦", tags: ["Repo", "Novidade"],       cls: "t-blue" };
+      case "Blog":        return { icon: "📝", tags: ["Blog", "Novidade"],       cls: "t-orange" };
+      default:            return { icon: "✨", tags: [tag],                       cls: "t-amber" };
+    }
+  }
+
+  // "Hoje", "Ontem", "N dias atrás" ou data curta
   function feedWhen(ts) {
     if (!ts) return "";
     var dias = Math.floor((Date.now() - ts) / 86400000);
-    if (dias <= 0) return "hoje";
-    if (dias === 1) return "ontem";
-    if (dias < 7) return "há " + dias + " dias";
+    if (dias <= 0) return "Hoje";
+    if (dias === 1) return "Ontem";
+    if (dias < 30) return dias + " dias atrás";
     var d = new Date(ts);
     return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
   }

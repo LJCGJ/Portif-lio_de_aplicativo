@@ -593,7 +593,6 @@
     $("t-lead").value = (s.hero && s.hero.lead) || "";
     $("t-btn-primary").value = (s.hero && s.hero.btn_primary) || "";
     $("t-btn-github").value = (s.hero && s.hero.btn_github) || "";
-    $("t-play-cap").value = (s.playground && s.playground.caption) || "";
     $("t-sec-featured").value = (s.sections && s.sections.featured_title) || "";
     $("t-sec-projects").value = (s.sections && s.sections.projects_title) || "";
     $("t-sec-blog").value = (s.sections && s.sections.blog_title) || "";
@@ -610,9 +609,6 @@
         lead: $("t-lead").value.trim(),
         btn_primary: $("t-btn-primary").value.trim(),
         btn_github: $("t-btn-github").value.trim()
-      },
-      playground: {
-        caption: $("t-play-cap").value.trim()
       },
       sections: {
         featured_title: $("t-sec-featured").value.trim(),

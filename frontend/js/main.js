@@ -34,6 +34,7 @@
     loadLatestPosts();
     applySiteTexts();
     loadProjects();
+    loadFeed();
   });
 
   /* ---- Textos editáveis (data/site.json) ---- */
@@ -129,6 +130,7 @@
     var dots = dotsHost ? Array.prototype.slice.call(dotsHost.children) : [];
 
     function current() {
+      if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 2) return slides.length - 1;
       var x = track.scrollLeft, best = 0, dist = Infinity;
       slides.forEach(function (s, i) {
         var d = Math.abs(s.offsetLeft - x);
@@ -148,8 +150,8 @@
 
     var prev = document.getElementById("car-prev");
     var next = document.getElementById("car-next");
-    if (prev) prev.addEventListener("click", function () { goTo(current() - 1); pause(); });
-    if (next) next.addEventListener("click", function () { goTo(current() + 1); pause(); });
+    if (prev) prev.addEventListener("click", function () { var c = current(); goTo(c === 0 ? slides.length - 1 : c - 1); pause(); });
+    if (next) next.addEventListener("click", function () { var c = current(); goTo(c >= slides.length - 1 ? 0 : c + 1); pause(); });
 
     var t;
     track.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(paint, 80); }, { passive: true });
@@ -200,6 +202,133 @@
         t = setTimeout(render, 90);
       });
     });
+  }
+
+  /* ---- Feed de curiosidades + status (home) ---------------------------- *
+   * Autônomo: junta 3 fontes em paralelo, mescla por data e renderiza com  *
+   * o MESMO motor C++/Wasm (monta Markdown e passa por engine.render).      *
+   *   1) data/feed.json          -> curiosidades/avisos manuais            *
+   *   2) API pública do GitHub    -> releases e commits recentes           *
+   *   3) posts/posts.json         -> últimas publicações do blog           *
+   * Qualquer fonte que falhar é ignorada; o resto continua aparecendo.     *
+   * -------------------------------------------------------------------- */
+  var GITHUB_USER = "LJCGJ";
+
+  function loadFeed() {
+    var host = document.getElementById("feed-body");
+    if (!host) return;
+    var status = document.getElementById("feed-status");
+    var dot = document.getElementById("feed-dot");
+
+    // resolve mesmo se uma fonte cair (nunca rejeita)
+    function soft(promise, onOk) {
+      return promise.then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      }).then(onOk).catch(function () { return []; });
+    }
+
+    var pLocal = soft(fetch("data/feed.json"), function (list) {
+      return (list || []).map(function (it) {
+        return { tag: it.tag || "Curiosidade", text: it.text || "", date: it.date, origin: "local" };
+      });
+    });
+    // obs: curiosidades manuais preservam Markdown de propósito (posso usar **negrito**, [links]);
+    // só as fontes automáticas (GitHub) passam por mdSafe, pois vêm de dados não controlados.
+
+    var pGitHub = soft(
+      fetch("https://api.github.com/users/" + GITHUB_USER + "/events/public"),
+      function (events) {
+        if (events && events.length) {
+          try { localStorage.setItem("feed_gh_cache", JSON.stringify(events)); } catch (e) {}
+        }
+        return normalizeGitHub(events);
+      }
+    );
+
+    var pPosts = soft(fetch("posts/posts.json"), function (posts) {
+      return (posts || []).slice(0, 5).map(function (p) {
+        return {
+          tag: "Blog",
+          text: "Novo post: [" + mdSafe(p.title || "publicação") + "](post.html?slug=" + encodeURIComponent(p.slug) + ").",
+          date: p.date,
+          origin: "blog"
+        };
+      });
+    });
+
+    Promise.all([pLocal, pGitHub, pPosts]).then(function (parts) {
+      var ghItems = parts[1];
+      // API sem resposta (rate limit / offline)? tenta a última boa guardada
+      if (!ghItems.length) {
+        try {
+          var cached = JSON.parse(localStorage.getItem("feed_gh_cache") || "[]");
+          ghItems = normalizeGitHub(cached);
+        } catch (e) { ghItems = []; }
+      }
+
+      var items = parts[0].concat(ghItems, parts[2])
+        .filter(function (it) { return it.text; })
+        .map(function (it) { it.ts = new Date(it.date).getTime() || 0; return it; })
+        .sort(function (a, b) { return b.ts - a.ts; })
+        .slice(0, 8);
+
+      if (!items.length) {
+        host.innerHTML = '<p class="mono" style="color:var(--ink-faint)">Sem novidades por enquanto.</p>';
+        return;
+      }
+
+      // monta UMA string Markdown e deixa o motor C++/Wasm renderizar
+      var md = items.map(function (it) {
+        return "**[" + it.tag + "]** " + it.text + "  \n" +
+               "<span class=\"feed-when\">" + feedWhen(it.ts) + "</span>";
+      }).join("\n\n");
+
+      window.MdEngine.ready.then(function (engine) {
+        if (status) status.textContent = engine.name;
+        if (dot && engine.wasm) dot.classList.add("live");
+        host.innerHTML = engine.render(md);
+      });
+    });
+  }
+
+  // transforma eventos crus do GitHub em itens do feed
+  function normalizeGitHub(events) {
+    return (events || [])
+      .filter(function (e) { return e.type === "ReleaseEvent" || e.type === "PushEvent" || e.type === "CreateEvent"; })
+      .slice(0, 8)
+      .map(function (e) {
+        var repo = mdSafe((e.repo && e.repo.name ? e.repo.name : "").replace(GITHUB_USER + "/", ""));
+        var tag = "Código", text;
+        if (e.type === "ReleaseEvent") {
+          tag = "Release";
+          var rel = e.payload && e.payload.release ? (e.payload.release.name || e.payload.release.tag_name) : "";
+          text = "Nova versão de **" + repo + "**" + (rel ? " — " + mdSafe(rel) : "") + ".";
+        } else if (e.type === "CreateEvent") {
+          tag = "Repo";
+          text = "Novidade no repositório **" + repo + "**.";
+        } else {
+          var n = e.payload && e.payload.commits ? e.payload.commits.length : 0;
+          text = "Atualização em **" + repo + "**" + (n ? " (" + n + " commit" + (n > 1 ? "s" : "") + ")" : "") + ".";
+        }
+        return { tag: tag, text: text, date: e.created_at, origin: "github" };
+      });
+  }
+
+  // neutraliza caracteres que quebrariam a formatação Markdown do feed
+  function mdSafe(s) {
+    return String(s || "").replace(/[\\`*_\[\]()<>#]/g, "\\$&");
+  }
+
+  // "hoje", "ontem", "há N dias" ou data curta
+  function feedWhen(ts) {
+    if (!ts) return "";
+    var dias = Math.floor((Date.now() - ts) / 86400000);
+    if (dias <= 0) return "hoje";
+    if (dias === 1) return "ontem";
+    if (dias < 7) return "há " + dias + " dias";
+    var d = new Date(ts);
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
   }
 
   /* ---- Últimos posts na home ---- */

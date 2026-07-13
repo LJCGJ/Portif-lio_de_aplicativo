@@ -542,6 +542,12 @@ a:hover { text-decoration: underline; }
 .feed-body strong { color: var(--accent); font-weight: 600; } /* a [tag] em cobalto */
 .feed-body a { color: #7CA0FF; text-decoration: none; }
 .feed-body a:hover { text-decoration: underline; }
+.feed-body em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #6B7585;
+}
 .feed-body .feed-when {
   font-family: var(--mono);
   font-size: 0.72rem;

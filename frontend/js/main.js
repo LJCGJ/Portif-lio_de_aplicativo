@@ -280,8 +280,7 @@
 
       // monta UMA string Markdown e deixa o motor C++/Wasm renderizar
       var md = items.map(function (it) {
-        return "**[" + it.tag + "]** " + it.text + "  \n" +
-               "<span class=\"feed-when\">" + feedWhen(it.ts) + "</span>";
+        return "**[" + it.tag + "]** " + it.text + "  \n_" + feedWhen(it.ts) + "_";
       }).join("\n\n");
 
       window.MdEngine.ready.then(function (engine) {
@@ -294,8 +293,17 @@
 
   // transforma eventos crus do GitHub em itens do feed
   function normalizeGitHub(events) {
+    var vistos = {};
     return (events || [])
       .filter(function (e) { return e.type === "ReleaseEvent" || e.type === "PushEvent" || e.type === "CreateEvent"; })
+      .filter(function (e) {
+        // um item por repositorio (o mais recente); releases sempre passam
+        var nome = e.repo && e.repo.name ? e.repo.name : "";
+        if (e.type === "ReleaseEvent") return true;
+        if (vistos[nome]) return false;
+        vistos[nome] = true;
+        return true;
+      })
       .slice(0, 8)
       .map(function (e) {
         var repo = mdSafe((e.repo && e.repo.name ? e.repo.name : "").replace(GITHUB_USER + "/", ""));

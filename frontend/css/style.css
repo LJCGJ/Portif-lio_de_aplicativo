@@ -498,3 +498,54 @@ a:hover { text-decoration: underline; }
   @keyframes sweep { to { background-size: 100% 3px; } }
 }
 .hero .hl { padding-bottom: 2px; }
+
+
+/* ===================== Feed autônomo (home) ===================== */
+.feed {
+  margin-top: 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  background: #0D1017; /* terminal escuro fixo, combina nos dois temas */
+  box-shadow: 0 14px 34px -26px rgba(20, 24, 31, 0.55);
+}
+.feed-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6ch;
+  padding: 0.55rem 0.85rem;
+  background: #141A24;
+  border-bottom: 1px solid #232C3B;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #A6AFBD;
+}
+.feed-head .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #6B7585; flex: none;
+}
+.feed-head .dot.live {
+  background: var(--live);
+  animation: pulse 2s ease-out infinite;
+}
+.feed-head .spacer { margin-left: auto; }
+.feed-body {
+  padding: 0.9rem 1.05rem;
+  max-height: 300px;
+  overflow: auto;
+  font-size: 0.9rem;
+  color: #E7EBF2;
+}
+.feed-body > :first-child { margin-top: 0; }
+.feed-body > :last-child { margin-bottom: 0; }
+.feed-body p { margin: 0 0 0.75rem; line-height: 1.5; }
+.feed-body strong { color: var(--accent); font-weight: 600; } /* a [tag] em cobalto */
+.feed-body a { color: #7CA0FF; text-decoration: none; }
+.feed-body a:hover { text-decoration: underline; }
+.feed-body .feed-when {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #6B7585;
+}
+.feed-body::-webkit-scrollbar { width: 8px; }
+.feed-body::-webkit-scrollbar-thumb { background: #232C3B; border-radius: 8px; }

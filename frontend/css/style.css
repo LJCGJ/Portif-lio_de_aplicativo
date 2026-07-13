@@ -479,14 +479,15 @@ a:hover { text-decoration: underline; }
 
 /* ===================== Entrada do hero (uma vez, discreta) ===================== */
 @media (prefers-reduced-motion: no-preference) {
-  .hero .eyebrow, .hero h1, .hero .lead, .hero .hero-actions, .hero .engine, .hero .engine-cap {
+  .hero .eyebrow, .hero h1, .hero .lead, .hero .hero-actions, .hero .feed, .hero .feed-highlight, .hero .engine-cap {
     animation: rise .5s ease both;
   }
   .hero h1 { animation-delay: .06s; }
   .hero .lead { animation-delay: .12s; }
   .hero .hero-actions { animation-delay: .18s; }
-  .hero .engine { animation-delay: .22s; }
-  .hero .engine-cap { animation-delay: .3s; }
+  .hero .feed { animation-delay: .22s; }
+  .hero .feed-highlight { animation-delay: .28s; }
+  .hero .engine-cap { animation-delay: .34s; }
   @keyframes rise {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
@@ -502,56 +503,79 @@ a:hover { text-decoration: underline; }
 
 /* ===================== Feed autônomo (home) ===================== */
 .feed {
-  margin-top: 1.1rem;
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   overflow: hidden;
-  background: #0D1017; /* terminal escuro fixo, combina nos dois temas */
-  box-shadow: 0 14px 34px -26px rgba(20, 24, 31, 0.55);
+  background: #10131B; /* terminal escuro fixo, combina nos dois temas */
+  box-shadow: 0 18px 40px -28px rgba(20, 24, 31, 0.5);
 }
-.feed-head {
+.feed-title {
   display: flex;
   align-items: center;
-  gap: 0.6ch;
-  padding: 0.55rem 0.85rem;
-  background: #141A24;
-  border-bottom: 1px solid #232C3B;
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: #A6AFBD;
+  gap: 0.7ch;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.35;
 }
-.feed-head .dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: #6B7585; flex: none;
-}
-.feed-head .dot.live {
-  background: var(--live);
-  animation: pulse 2s ease-out infinite;
-}
-.feed-head .spacer { margin-left: auto; }
+.feed-title .ft-icon { font-size: 1.05rem; flex: none; }
 .feed-body {
   padding: 0.9rem 1.05rem;
-  max-height: 300px;
+  max-height: 340px;
   overflow: auto;
-  font-size: 0.9rem;
+  font-family: var(--mono);
+  font-size: 0.84rem;
   color: #E7EBF2;
 }
-.feed-body > :first-child { margin-top: 0; }
-.feed-body > :last-child { margin-bottom: 0; }
-.feed-body p { margin: 0 0 0.75rem; line-height: 1.5; }
-.feed-body strong { color: var(--accent); font-weight: 600; } /* a [tag] em cobalto */
-.feed-body a { color: #7CA0FF; text-decoration: none; }
-.feed-body a:hover { text-decoration: underline; }
-.feed-body em {
-  font-style: normal;
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: #6B7585;
+.feed-item { margin-bottom: 0.95rem; }
+.feed-item:last-child { margin-bottom: 0; }
+.fi-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7ch;
 }
-.feed-body .feed-when {
-  font-family: var(--mono);
-  font-size: 0.72rem;
+.fi-icon { flex: none; }
+.fi-tags { font-weight: 600; white-space: nowrap; }
+.fi-tags.t-amber  { color: #F5C042; }
+.fi-tags.t-green  { color: #58D08A; }
+.fi-tags.t-blue   { color: #7CA0FF; }
+.fi-tags.t-orange { color: #F09A5A; }
+.fi-date {
+  margin-left: auto;
   color: #6B7585;
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
+.fi-text { margin-top: 0.15rem; line-height: 1.5; }
+.fi-text p { margin: 0; }
+.fi-text strong { color: #E7EBF2; }
+.fi-text a { color: #7CA0FF; text-decoration: none; }
+.fi-text a:hover { text-decoration: underline; }
+.fi-text em { font-style: normal; }
 .feed-body::-webkit-scrollbar { width: 8px; }
 .feed-body::-webkit-scrollbar-thumb { background: #232C3B; border-radius: 8px; }
+
+/* bloco "Curiosidade em Destaque" (abaixo do feed) */
+.feed-highlight {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-top: 1.1rem;
+}
+.fh-badge {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  background: #6C4CF1;
+  color: #fff;
+  font-family: var(--mono);
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px -10px rgba(108, 76, 241, 0.7);
+}
+.fh-text { font-size: 0.95rem; color: var(--ink-soft); line-height: 1.5; }
+.fh-text strong { color: var(--ink); }

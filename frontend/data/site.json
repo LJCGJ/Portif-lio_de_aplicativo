@@ -2,12 +2,9 @@
   "hero": {
     "eyebrow": "Leonardo Gonzaga · portfólio",
     "title_html": "QA automation de dia. <span class=\"hl\">C++ de noite.</span>",
-    "lead": "No trabalho, automatizo testes com Robot Framework e Python. Fora dele, construo minhas próprias ferramentas em C++ — o motor que renderiza este site é uma delas. Experimente aí do lado.",
+    "lead": "No trabalho, automatizo testes com Robot Framework e Python. Fora dele, construo minhas próprias ferramentas em C++ — o motor que renderiza o feed aí do lado é uma delas.",
     "btn_primary": "Ver projetos",
     "btn_github": "GitHub ↗"
-  },
-  "playground": {
-    "caption": "Pode digitar à vontade: o preview da direita sai de um motor em C++ compilado para WebAssembly — sem servidor, sem biblioteca pronta."
   },
   "sections": {
     "featured_title": "Em destaque",

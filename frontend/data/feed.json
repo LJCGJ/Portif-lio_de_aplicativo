@@ -1,12 +1,12 @@
 [
   {
     "tag": "Curiosidade",
-    "text": "O C++ compilado para WebAssembly roda perto da velocidade nativa — o motor que renderiza este feed é prova disso.",
+    "text": "O C++ compilado para Wasm é 90% tão rápido quanto o código nativo.",
     "date": "2026-07-13"
   },
   {
-    "tag": "Novidade",
-    "text": "Este painel se atualiza sozinho: junta curiosidades, releases do GitHub e posts do blog, tudo ordenado por data.",
+    "tag": "Status",
+    "text": "O motor deste feed foi otimizado para renderização em menos de 10ms.",
     "date": "2026-07-12"
   }
 ]

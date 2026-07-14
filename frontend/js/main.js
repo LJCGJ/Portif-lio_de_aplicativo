@@ -92,7 +92,7 @@
     return (
       '<article class="card' + (p.featured ? " feature" : "") + '">' +
         (p.kicker ? '<p class="kicker">' + esc(p.kicker) + "</p>" : "") +
-        "<h3>" + esc(p.title) + "</h3>" +
+        "<h3>" + (p.icon ? '<span class="card-icon" aria-hidden="true">' + esc(p.icon) + "</span> " : "") + esc(p.title) + "</h3>" +
         '<p class="desc">' + esc(p.desc || "") + "</p>" +
         '<div class="tags">' + (p.tags || []).map(function (t) { return '<span class="tag">' + esc(t) + "</span>"; }).join("") + "</div>" +
         (actions ? '<div class="card-actions">' + actions + "</div>" : "") +
@@ -183,6 +183,16 @@
    * -------------------------------------------------------------------- */
   var GITHUB_USER = "LJCGJ";
 
+  // nomes amigáveis dos repositórios no feed (reserva: troca -_ por espaço)
+  var NOMES_REPOS = {
+    "Portif-lio_de_aplicativo": "Portfólio LJCGJ.dev",
+    "Limpador_arquivos": "Limpador de Arquivos"
+  };
+  function prettyRepo(nome) {
+    nome = String(nome || "").replace(GITHUB_USER + "/", "");
+    return NOMES_REPOS[nome] || nome.replace(/[-_]+/g, " ");
+  }
+
   function loadFeed() {
     var host = document.getElementById("feed-body");
     if (!host) return;
@@ -212,6 +222,18 @@
       }
     );
 
+    // repositórios do usuário: garante que projetos novos apareçam mesmo
+    // quando o evento de criação já saiu da janela da API de eventos
+    var pRepos = soft(
+      fetch("https://api.github.com/users/" + GITHUB_USER + "/repos?sort=created&per_page=10"),
+      function (repos) {
+        if (repos && repos.length) {
+          try { localStorage.setItem("feed_gh_repos", JSON.stringify(repos)); } catch (e) {}
+        }
+        return normalizeRepos(repos);
+      }
+    );
+
     var pPosts = soft(fetch("posts/posts.json"), function (posts) {
       return (posts || []).slice(0, 5).map(function (p) {
         return {
@@ -223,7 +245,7 @@
       });
     });
 
-    Promise.all([pLocal, pGitHub, pPosts]).then(function (parts) {
+    Promise.all([pLocal, pGitHub, pPosts, pRepos]).then(function (parts) {
       var ghItems = parts[1];
       // API sem resposta (rate limit / offline)? tenta a última boa guardada
       if (!ghItems.length) {
@@ -232,11 +254,26 @@
           ghItems = normalizeGitHub(cached);
         } catch (e) { ghItems = []; }
       }
+      var repoItems = parts[3];
+      if (!repoItems.length) {
+        try {
+          var cachedR = JSON.parse(localStorage.getItem("feed_gh_repos") || "[]");
+          repoItems = normalizeRepos(cachedR);
+        } catch (e) { repoItems = []; }
+      }
 
-      var items = parts[0].concat(ghItems, parts[2])
+      // um destaque por repositório (releases sempre passam)
+      var porRepo = {};
+      var items = parts[0].concat(ghItems, repoItems, parts[2])
         .filter(function (it) { return it.text; })
         .map(function (it) { it.ts = new Date(it.date).getTime() || 0; return it; })
         .sort(function (a, b) { return b.ts - a.ts; })
+        .filter(function (it) {
+          if (it.origin !== "github" || it.tag === "Release" || !it.key) return true;
+          if (porRepo[it.key]) return false;
+          porRepo[it.key] = true;
+          return true;
+        })
         .slice(0, 8);
 
       if (!items.length) {
@@ -280,20 +317,40 @@
       })
       .slice(0, 8)
       .map(function (e) {
-        var repo = mdSafe((e.repo && e.repo.name ? e.repo.name : "").replace(GITHUB_USER + "/", ""));
+        var bruto = (e.repo && e.repo.name ? e.repo.name : "").replace(GITHUB_USER + "/", "");
+        var repo = mdSafe(prettyRepo(bruto));
         var tag = "Código", text;
         if (e.type === "ReleaseEvent") {
           tag = "Release";
           var rel = e.payload && e.payload.release ? (e.payload.release.name || e.payload.release.tag_name) : "";
-          text = "Nova versão de **" + repo + "**" + (rel ? " — " + mdSafe(rel) : "") + ".";
+          text = "Versão " + (rel ? mdSafe(rel) + " " : "") + "de **" + repo + "** publicada e disponível para download.";
         } else if (e.type === "CreateEvent") {
           tag = "Repo";
-          text = "Novidade no repositório **" + repo + "**.";
+          text = "Novo projeto no GitHub: **" + repo + "**.";
         } else {
           var n = e.payload && e.payload.commits ? e.payload.commits.length : 0;
-          text = "Atualização em **" + repo + "**" + (n ? " (" + n + " commit" + (n > 1 ? "s" : "") + ")" : "") + ".";
+          text = "Código de **" + repo + "** atualizado" + (n ? " — " + n + " commit" + (n > 1 ? "s" : "") + " publicado" + (n > 1 ? "s" : "") : "") + ".";
         }
-        return { tag: tag, text: text, date: e.created_at, origin: "github" };
+        return { tag: tag, text: text, date: e.created_at, origin: "github", key: bruto };
+      });
+  }
+
+  // transforma a lista de repositórios em itens "novo projeto" do feed
+  function normalizeRepos(repos) {
+    var limite = Date.now() - 90 * 86400000; // últimos 90 dias
+    return (repos || [])
+      .filter(function (r) { return r && !r.fork && r.created_at && new Date(r.created_at).getTime() > limite; })
+      .slice(0, 5)
+      .map(function (r) {
+        var repo = mdSafe(prettyRepo(r.name));
+        var desc = r.description ? " — " + mdSafe(r.description) : "";
+        return {
+          tag: "Repo",
+          text: "Novo projeto no GitHub: **" + repo + "**" + desc + ".",
+          date: r.created_at,
+          origin: "github",
+          key: r.name
+        };
       });
   }
 

@@ -1,6 +1,7 @@
 [
   {
     "featured": true,
+    "icon": "🧹",
     "kicker": "Destaque · Windows",
     "title": "Limpador de Arquivos",
     "desc": "Utilitário de limpeza para Windows em C++/CLI (WinForms). Faz varredura de mídia antiga, instaladores abandonados e pastas órfãs (via registro); tema claro/escuro, envio para a lixeira, exportação em CSV e barra de progresso real com Cancelar. Instalador feito com Inno Setup.",
@@ -28,6 +29,7 @@
   },
   {
     "featured": false,
+    "icon": "🤖",
     "kicker": "Android",
     "title": "Auto-clicker",
     "desc": "App de cliques/gestos automáticos em Kotlin + Jetpack Compose, com cálculo do caminho de swipe em C++ nativo (curvas de Bézier com jitter) via NDK.",
@@ -49,6 +51,7 @@
   },
   {
     "featured": false,
+    "icon": "🌐",
     "kicker": "Web · open source",
     "title": "Este site",
     "desc": "Portfólio + blog estático no GitHub Pages, com painel de administração próprio. O motor que renderiza o Markdown dos posts é escrito em C++ e compilado para WebAssembly.",

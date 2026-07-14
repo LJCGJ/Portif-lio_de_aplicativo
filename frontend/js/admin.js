@@ -429,6 +429,7 @@
     state.editingProject = i;
     $("pr-title").value = p.title || "";
     $("pr-kicker").value = p.kicker || "";
+    $("pr-icon").value = p.icon || "";
     $("pr-desc").value = p.desc || "";
     $("pr-tags").value = (p.tags || []).join(", ");
     $("pr-featured").value = p.featured ? "true" : "false";
@@ -446,7 +447,7 @@
 
   function newProject() {
     state.editingProject = null;
-    ["pr-title", "pr-kicker", "pr-desc", "pr-tags", "pr-code", "pr-download", "pr-order"].forEach(function (id) { $(id).value = ""; });
+    ["pr-title", "pr-kicker", "pr-icon", "pr-desc", "pr-tags", "pr-code", "pr-download", "pr-order"].forEach(function (id) { $(id).value = ""; });
     $("pr-featured").value = "false";
     $("pr-carousel").value = "true";
     $("btn-delete-project").hidden = true;
@@ -466,6 +467,7 @@
       carousel: $("pr-carousel").value === "true",
       order: parseInt($("pr-order").value, 10) || undefined,
       kicker: $("pr-kicker").value.trim(),
+      icon: $("pr-icon").value.trim(),
       title: $("pr-title").value.trim(),
       desc: $("pr-desc").value.trim(),
       tags: $("pr-tags").value.split(",").map(function (s) { return s.trim(); }).filter(Boolean),

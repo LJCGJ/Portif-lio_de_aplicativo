@@ -1,7 +1,7 @@
 {
   "hero": {
     "eyebrow": "Leonardo Gonzaga · Engenharia de Software & QA",
-    "title_html": "Da qualidade do software <span class=\"hl\">à arte de construí-lo.</span>",
+    "title_html": "Cuido da qualidade de dia. <span class=\"hl\">Crio ferramentas à noite.</span>",
     "lead": "Trabalho com automação de testes em sistemas corporativos. Fora do expediente, desenvolvo minhas próprias ferramentas em C++, C# e Kotlin — como o motor que renderiza este feed em tempo real, direto no seu navegador.",
     "btn_primary": "Ver projetos",
     "btn_github": "GitHub ↗"

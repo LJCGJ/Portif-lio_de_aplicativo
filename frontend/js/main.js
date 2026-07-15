@@ -42,8 +42,7 @@
     var hasTargets = document.getElementById("hero-title") ||
                      document.getElementById("footer-who");
     if (!hasTargets) return;
-    fetch("data/site.json")
-      .then(function (r) { return r.json(); })
+    getSite()
       .then(function (s) {
         var hero = s.hero || {}, footer = s.footer || {};
         var secs = s.sections || {};
@@ -68,15 +67,18 @@
   function loadProjects() {
     var host = document.getElementById("projects-grid");
     if (!host) return;
-    fetch("data/projects.json")
-      .then(function (r) { return r.json(); })
-      .then(function (list) {
-        if (!list.length) {
-          host.innerHTML = '<p class="mono" style="color:var(--ink-faint)">Nenhum projeto cadastrado.</p>';
-          return;
-        }
-        host.innerHTML = list.map(projectCard).join("");
-        buildCarousel(list);
+    Promise.all([
+      fetch("data/projects.json").then(function (r) { return r.json(); }),
+      getRepos(),
+      getSite()
+    ])
+      .then(function (res) {
+        var list = res[0] || [];
+        host.innerHTML = list.length
+          ? list.map(projectCard).join("")
+          : '<p class="mono" style="color:var(--ink-faint)">Nenhum projeto cadastrado.</p>';
+        var cfg = (res[2] && res[2].carrossel) || {};
+        buildCarousel(montarCarrossel(list, res[1], cfg));
       })
       .catch(function () {
         host.innerHTML = '<p class="mono">Não consegui carregar os projetos.</p>';
@@ -102,17 +104,12 @@
 
 
   /* ---- Carrossel de destaques (home) ---- */
-  function buildCarousel(list) {
+  function buildCarousel(featured) {
     var track = document.getElementById("car-track");
     if (!track) return;
     var section = document.getElementById("destaques");
-
-    var featured = list
-      .map(function (p, i) { return { p: p, i: i }; })
-      .filter(function (x) { return x.p.carousel; })
-      .sort(function (a, b) { return (a.p.order || 99) - (b.p.order || 99) || a.i - b.i; })
-      .map(function (x) { return x.p; });
-    if (!featured.length) featured = list.slice(0, 3); // reserva: primeiros projetos
+    featured = featured || [];
+    if (!featured.length) { if (section) section.hidden = true; return; }
 
     track.innerHTML = featured.map(function (p) {
       return '<div class="car-slide">' + projectCard(p) + "</div>";
@@ -196,6 +193,86 @@
     return NOMES_REPOS[nome] || nome.replace(/[-_]+/g, " ");
   }
 
+  // emoji automático por linguagem (cards criados a partir do GitHub)
+  var EMOJI_LANG = {
+    "C++": "⚙️", "C": "⚙️", "C#": "🎯", "Java": "☕", "Kotlin": "🤖",
+    "Python": "🐍", "JavaScript": "⚡", "TypeScript": "⚡", "HTML": "🌐",
+    "CSS": "🎨", "Shell": "🐚", "PowerShell": "🐚", "Go": "🐹",
+    "Rust": "🦀", "PHP": "🐘", "Ruby": "💎", "Swift": "🕊️", "Dart": "🎯"
+  };
+  function emojiPara(lang) { return EMOJI_LANG[lang] || "📦"; }
+
+  // site.json e lista de repositórios compartilhados entre feed e carrossel
+  var _sitePromise = null;
+  function getSite() {
+    if (!_sitePromise) {
+      _sitePromise = fetch("data/site.json").then(function (r) { return r.json(); }).catch(function () { return {}; });
+    }
+    return _sitePromise;
+  }
+  var _reposPromise = null;
+  function getRepos() {
+    if (!_reposPromise) {
+      _reposPromise = fetch("https://api.github.com/users/" + GITHUB_USER + "/repos?sort=created&per_page=20")
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .then(function (repos) {
+          try { localStorage.setItem("feed_gh_repos", JSON.stringify(repos)); } catch (e) {}
+          return repos;
+        })
+        .catch(function () {
+          // API fora do ar ou limite atingido: usa a última lista boa guardada
+          try { return JSON.parse(localStorage.getItem("feed_gh_repos") || "[]"); } catch (e) { return []; }
+        });
+    }
+    return _reposPromise;
+  }
+
+  // qual repositório um projeto manual representa (pelo link de código)
+  function repoDoProjeto(p) {
+    var m = JSON.stringify((p && p.actions) || []).match(/github\.com\/[A-Za-z0-9_.\-]+\/([A-Za-z0-9_.\-]+)/i);
+    return m ? m[1] : null;
+  }
+
+  // card automático a partir de um repositório do GitHub
+  function cardDoRepo(r) {
+    return {
+      kicker: "GitHub · " + (r.language || "código"),
+      icon: emojiPara(r.language),
+      title: prettyRepo(r.name),
+      desc: r.description || "Projeto público no GitHub — código aberto.",
+      tags: r.language ? [r.language] : [],
+      actions: [{ label: "Código ↗", href: r.html_url, style: "ghost", external: true }]
+    };
+  }
+
+  // composição do carrossel: fixados manualmente + repositórios mais novos (máx. 5).
+  // Quando um projeto novo chega e a casa está cheia, o automático mais antigo sai.
+  function montarCarrossel(projetos, repos, cfg) {
+    var ocultar = {};
+    ((cfg && cfg.ocultar) || []).forEach(function (n) { ocultar[String(n).toLowerCase()] = true; });
+    var usados = {};
+    (projetos || []).forEach(function (p) {
+      var r = repoDoProjeto(p);
+      if (r) usados[r.toLowerCase()] = true;
+      if (p.title) usados[String(p.title).toLowerCase()] = true;
+    });
+    var manuais = (projetos || [])
+      .map(function (p, i) { return { p: p, i: i }; })
+      .filter(function (x) { return x.p.carousel; })
+      .sort(function (a, b) { return (a.p.order || 99) - (b.p.order || 99) || a.i - b.i; })
+      .map(function (x) { return x.p; })
+      .slice(0, 5);
+    var autos = (repos || [])
+      .filter(function (r) {
+        if (!r || r.fork) return false;
+        var n = String(r.name).toLowerCase();
+        return !ocultar[n] && !usados[n] && !usados[prettyRepo(r.name).toLowerCase()];
+      })
+      .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); })
+      .map(cardDoRepo);
+    return manuais.concat(autos).slice(0, 5);
+  }
+
   function loadFeed() {
     var host = document.getElementById("feed-body");
     if (!host) return;
@@ -227,15 +304,7 @@
 
     // repositórios do usuário: garante que projetos novos apareçam mesmo
     // quando o evento de criação já saiu da janela da API de eventos
-    var pRepos = soft(
-      fetch("https://api.github.com/users/" + GITHUB_USER + "/repos?sort=created&per_page=20"),
-      function (repos) {
-        if (repos && repos.length) {
-          try { localStorage.setItem("feed_gh_repos", JSON.stringify(repos)); } catch (e) {}
-        }
-        return normalizeRepos(repos);
-      }
-    );
+    var pRepos = getRepos().then(normalizeRepos).catch(function () { return []; });
 
     // commits do repositório do site (a API de eventos não traz mensagens)
     var pSite = soft(
@@ -269,12 +338,6 @@
         } catch (e) { ghItems = []; }
       }
       var repoItems = parts[3];
-      if (!repoItems.length) {
-        try {
-          var cachedR = JSON.parse(localStorage.getItem("feed_gh_repos") || "[]");
-          repoItems = normalizeRepos(cachedR);
-        } catch (e) { repoItems = []; }
-      }
       var siteItems = parts[4];
       if (!siteItems.length) {
         try {
@@ -456,6 +519,9 @@
     }
     if ((m = msg.match(/^downloads?:\s*(.+)/i))) {
       return { tag: "Status", text: "Página de downloads atualizada (" + mdSafe(m[1]) + ").", key: "dl|" + m[1] };
+    }
+    if (/^carrossel:/i.test(msg)) {
+      return { tag: "Status", text: "Carrossel de destaques ajustado pelo painel administrativo.", key: "carrossel" };
     }
     if (/^textos?:/i.test(msg)) {
       return { tag: "Status", text: "Textos do site atualizados pelo painel administrativo.", key: "textos" };

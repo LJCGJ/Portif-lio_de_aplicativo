@@ -258,6 +258,7 @@
       renderPostList();
       renderProjectList();
       renderDownloadList();
+      renderAutoCarousel();
       fillTexts();
       setStatus("posts-status", "ok", "Dados carregados.");
     }).catch(function (err) {
@@ -587,6 +588,98 @@
       });
   }
 
+  /* ============== CARROSSEL AUTOMÁTICO (GitHub) ============== */
+  var EMOJI_LANG = {
+    "C++": "⚙️", "C": "⚙️", "C#": "🎯", "Java": "☕", "Kotlin": "🤖",
+    "Python": "🐍", "JavaScript": "⚡", "TypeScript": "⚡", "HTML": "🌐",
+    "CSS": "🎨", "Shell": "🐚", "PowerShell": "🐚", "Go": "🐹",
+    "Rust": "🦀", "PHP": "🐘", "Ruby": "💎", "Swift": "🕊️", "Dart": "🎯"
+  };
+  function emojiPara(lang) { return EMOJI_LANG[lang] || "📦"; }
+
+  var autoRepos = []; // últimos candidatos consultados
+
+  function renderAutoCarousel() {
+    var host = $("auto-carousel-list");
+    if (!host) return;
+    fetch("https://api.github.com/users/" + OWNER + "/repos?sort=created&per_page=20")
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (repos) {
+        var cfg = (state.site.data && state.site.data.carrossel) || {};
+        var ocultos = cfg.ocultar || [];
+        var usados = {};
+        (state.projects.data || []).forEach(function (p) {
+          var m = JSON.stringify(p.actions || []).match(/github\.com\/[A-Za-z0-9_.\-]+\/([A-Za-z0-9_.\-]+)/i);
+          if (m) usados[m[1].toLowerCase()] = true;
+          if (p.title) usados[String(p.title).toLowerCase()] = true;
+        });
+        autoRepos = (repos || [])
+          .filter(function (r) { return r && !r.fork && !usados[String(r.name).toLowerCase()]; })
+          .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); })
+          .slice(0, 10);
+        if (!autoRepos.length) {
+          host.innerHTML = '<p class="s mono" style="color:var(--ink-faint)">Nenhum repositório novo além dos projetos já cadastrados.</p>';
+          return;
+        }
+        host.innerHTML = autoRepos.map(function (r) {
+          var oculto = ocultos.indexOf(r.name) !== -1;
+          return '<div class="item-row">' +
+            '<div class="grow"><div class="t">' + emojiPara(r.language) + ' ' + esc(r.name) +
+              ' <span class="tag">' + (oculto ? "oculto" : "no carrossel") + '</span></div>' +
+            '<div class="s">' + esc(r.language || "sem linguagem") + (r.description ? " · " + esc(r.description) : "") + '</div></div>' +
+            '<button class="btn btn-ghost btn-sm" data-fixar="' + esc(r.name) + '" type="button">Fixar como projeto</button>' +
+            '<button class="btn btn-ghost btn-sm" data-ocultar="' + esc(r.name) + '" type="button">' + (oculto ? "Mostrar" : "Ocultar") + '</button>' +
+          '</div>';
+        }).join("");
+        host.querySelectorAll("[data-ocultar]").forEach(function (btn) {
+          btn.addEventListener("click", function () { toggleOculto(btn.getAttribute("data-ocultar")); });
+        });
+        host.querySelectorAll("[data-fixar]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var nome = btn.getAttribute("data-fixar");
+            var r = autoRepos.filter(function (x) { return x.name === nome; })[0];
+            if (r) fixarRepo(r);
+          });
+        });
+      })
+      .catch(function () {
+        host.innerHTML = '<p class="s mono">Não consegui consultar o GitHub agora — tente recarregar.</p>';
+      });
+  }
+
+  function toggleOculto(nome) {
+    var s = state.site.data || (state.site.data = {});
+    s.carrossel = s.carrossel || {};
+    var lista = (s.carrossel.ocultar = s.carrossel.ocultar || []);
+    var i = lista.indexOf(nome);
+    if (i >= 0) lista.splice(i, 1); else lista.push(nome);
+    setStatus("projects-status", "busy", "Publicando configuração do carrossel…");
+    saveFile("data/site.json", JSON.stringify(s, null, 2) + "\n", state.site.sha, "carrossel: " + (i >= 0 ? "mostra " : "oculta ") + nome)
+      .then(function (res) {
+        state.site.sha = res.content.sha;
+        renderAutoCarousel();
+        setStatus("projects-status", "ok", "Publicado! O site atualiza em 1–2 minutos.");
+      })
+      .catch(function (err) {
+        setStatus("projects-status", "err", err.message);
+        loadAll();
+      });
+  }
+
+  function fixarRepo(r) {
+    newProject();
+    $("pr-title").value = String(r.name).replace(/[-_]+/g, " ");
+    $("pr-kicker").value = "GitHub · " + (r.language || "código");
+    $("pr-icon").value = emojiPara(r.language);
+    $("pr-desc").value = r.description || "";
+    $("pr-tags").value = r.language || "";
+    $("pr-code").value = r.html_url || "";
+    $("pr-carousel").value = "true";
+    setStatus("projects-status", "ok", 'Cartão preenchido a partir do GitHub — revise e clique em "Salvar e publicar".');
+    var ed = $("project-editor");
+    if (ed && ed.scrollIntoView) ed.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   /* ======================= TEXTOS ======================= */
   function fillTexts() {
     var s = state.site.data;
@@ -604,24 +697,23 @@
   }
 
   function saveTexts() {
-    var s = {
-      hero: {
+    var s = state.site.data || {}; // preserva chaves extras (ex.: config do carrossel)
+    s.hero = {
         eyebrow: $("t-eyebrow").value.trim(),
         title_html: $("t-title").value.trim(),
         lead: $("t-lead").value.trim(),
         btn_primary: $("t-btn-primary").value.trim(),
         btn_github: $("t-btn-github").value.trim()
-      },
-      sections: {
-        featured_title: $("t-sec-featured").value.trim(),
-        projects_title: $("t-sec-projects").value.trim(),
-        blog_title: $("t-sec-blog").value.trim()
-      },
-      footer: {
-        who: $("t-who").value.trim(),
-        meta: $("t-meta").value.trim(),
-        note: $("t-footer-note").value.trim()
-      }
+    };
+    s.sections = {
+      featured_title: $("t-sec-featured").value.trim(),
+      projects_title: $("t-sec-projects").value.trim(),
+      blog_title: $("t-sec-blog").value.trim()
+    };
+    s.footer = {
+      who: $("t-who").value.trim(),
+      meta: $("t-meta").value.trim(),
+      note: $("t-footer-note").value.trim()
     };
     state.site.data = s;
     setStatus("texts-status", "busy", "Publicando…");

@@ -1,32 +1,10 @@
 [
   {
-    "featured": false,
-    "icon": "🤖",
-    "kicker": "Android",
-    "title": "Auto-clicker",
-    "desc": "App de cliques/gestos automáticos em Kotlin + Jetpack Compose, com cálculo do caminho de swipe em C++ nativo (curvas de Bézier com jitter) via NDK.",
-    "tags": [
-      "Kotlin",
-      "Compose",
-      "NDK / C++"
-    ],
-    "actions": [
-      {
-        "label": "Código ↗",
-        "href": "https://github.com/LJCGJ",
-        "style": "ghost",
-        "external": true
-      }
-    ],
-    "carousel": true,
-    "order": 2
-  },
-  {
     "featured": true,
     "icon": "🧹",
-    "kicker": "Destaque · Windows",
+    "kicker": "Windows · Desktop",
     "title": "Limpador de Arquivos",
-    "desc": "Utilitário de limpeza para Windows em C++/CLI (WinForms). Faz varredura de mídia antiga, instaladores abandonados e pastas órfãs (via registro); tema claro/escuro, envio para a lixeira, exportação em CSV e barra de progresso real com Cancelar. Instalador feito com Inno Setup.",
+    "desc": "Utilitário de limpeza para Windows em C++/CLI (WinForms): varre mídia antiga, instaladores abandonados e pastas órfãs, com envio seguro para a lixeira, exportação em CSV e tema claro/escuro. Distribuído com instalador Inno Setup.",
     "tags": [
       "C++/CLI",
       "WinForms",
@@ -51,13 +29,35 @@
   },
   {
     "featured": false,
-    "icon": "🌐",
-    "kicker": "Web · open source",
-    "title": "Este site",
-    "desc": "Portfólio + blog estático no GitHub Pages, com painel de administração próprio. O motor que renderiza o Markdown dos posts é escrito em C++ e compilado para WebAssembly.",
+    "icon": "🤖",
+    "kicker": "Android · Mobile",
+    "title": "Auto-clicker",
+    "desc": "Automação de cliques e gestos para Android em Kotlin + Jetpack Compose. O cálculo das trajetórias de swipe é feito em C++ nativo (curvas de Bézier) via NDK.",
     "tags": [
-      "C++ → WASM",
-      "JS",
+      "Kotlin",
+      "Jetpack Compose",
+      "C++ (NDK)"
+    ],
+    "actions": [
+      {
+        "label": "Código ↗",
+        "href": "https://github.com/LJCGJ",
+        "style": "ghost",
+        "external": true
+      }
+    ],
+    "carousel": true,
+    "order": 2
+  },
+  {
+    "featured": false,
+    "icon": "🌐",
+    "kicker": "Web · Open Source",
+    "title": "Este site",
+    "desc": "Portfólio e blog estáticos no GitHub Pages, com painel administrativo próprio. O Markdown dos posts é renderizado por um motor em C++ compilado para WebAssembly.",
+    "tags": [
+      "C++ → Wasm",
+      "JavaScript",
       "GitHub Pages"
     ],
     "actions": [

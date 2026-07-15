@@ -320,7 +320,7 @@
                 '<span class="fi-tags ' + m.cls + '">' +
                   m.tags.map(function (t) { return "[" + esc(t) + "]"; }).join(" ") +
                 '</span>' +
-                '<span class="fi-date">Data: ' + (it.origin === "local" ? "Sempre atual" : feedWhen(it.ts)) + '</span>' +
+                '<span class="fi-date">Data: ' + (it.origin === "local" ? "Atual" : feedWhen(it.ts)) + '</span>' +
               '</div>' +
               '<div class="fi-text">' + engine.render(it.text) + '</div>' +
             '</div>'

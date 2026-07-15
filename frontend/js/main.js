@@ -348,7 +348,7 @@
       if (e.type !== "ReleaseEvent" && e.type !== "PushEvent" && e.type !== "CreateEvent") return;
       var bruto = (e.repo && e.repo.name ? e.repo.name : "").replace(GITHUB_USER + "/", "");
       var repo = mdSafe(prettyRepo(bruto));
-      var dia = String(e.created_at || "").slice(0, 10);
+      var dia = diaLocal(e.created_at);
 
       if (e.type === "ReleaseEvent") {
         var rel = e.payload && e.payload.release ? (e.payload.release.name || e.payload.release.tag_name) : "";
@@ -409,7 +409,7 @@
       var msg = c && c.commit && c.commit.message ? c.commit.message : "";
       var data = c && c.commit && c.commit.author && c.commit.author.date ? c.commit.author.date : null;
       if (!data) return;
-      var dia = String(data).slice(0, 10);
+      var dia = diaLocal(data);
       var it = adminCommitItem(msg);
       if (it) {
         it.date = data;
@@ -480,6 +480,13 @@
           repoKey: r.name
         };
       });
+  }
+
+  // dia no fuso do visitante (alinha o agrupamento com o rótulo Hoje/Ontem)
+  function diaLocal(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return String(iso || "").slice(0, 10);
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
   }
 
   // neutraliza caracteres que quebrariam a formatação Markdown do feed

@@ -237,6 +237,17 @@
       }
     );
 
+    // commits do repositório do site (a API de eventos não traz mensagens)
+    var pSite = soft(
+      fetch("https://api.github.com/repos/" + GITHUB_USER + "/" + REPO_SITE + "/commits?per_page=30"),
+      function (lista) {
+        if (lista && lista.length) {
+          try { localStorage.setItem("feed_gh_site", JSON.stringify(lista)); } catch (e) {}
+        }
+        return normalizeSiteCommits(lista);
+      }
+    );
+
     var pPosts = soft(fetch("posts/posts.json"), function (posts) {
       return (posts || []).slice(0, 5).map(function (p) {
         return {
@@ -248,7 +259,7 @@
       });
     });
 
-    Promise.all([pLocal, pGitHub, pPosts, pRepos]).then(function (parts) {
+    Promise.all([pLocal, pGitHub, pPosts, pRepos, pSite]).then(function (parts) {
       var ghItems = parts[1];
       // API sem resposta (rate limit / offline)? tenta a última boa guardada
       if (!ghItems.length) {
@@ -264,10 +275,17 @@
           repoItems = normalizeRepos(cachedR);
         } catch (e) { repoItems = []; }
       }
+      var siteItems = parts[4];
+      if (!siteItems.length) {
+        try {
+          var cachedS = JSON.parse(localStorage.getItem("feed_gh_site") || "[]");
+          siteItems = normalizeSiteCommits(cachedS);
+        } catch (e) { siteItems = []; }
+      }
 
       // remove repetições do mesmo acontecimento (tipo+repositório+dia)
       var porRepo = {};
-      var items = parts[0].concat(ghItems, repoItems, parts[2])
+      var items = parts[0].concat(ghItems, repoItems, siteItems, parts[2])
         .filter(function (it) { return it.text; })
         .map(function (it) { it.ts = new Date(it.date).getTime() || 0; return it; })
         .sort(function (a, b) { return b.ts - a.ts; })
@@ -353,26 +371,13 @@
         return;
       }
 
-      // PushEvent
-      var commits = (e.payload && e.payload.commits) || [];
-      var genericos = 0;
-      if (bruto === REPO_SITE) {
-        // commits do painel admin viram itens específicos do site
-        commits.forEach(function (c) {
-          var it = adminCommitItem(c && c.message ? c.message : "");
-          if (it) {
-            it.date = e.created_at;
-            it.origin = "github";
-            it.key = "adm|" + it.key + "|" + dia;
-            out.push(it);
-          } else {
-            genericos++;
-          }
-        });
-      } else {
-        genericos = commits.length;
-      }
-      if (genericos > 0 || !commits.length) {
+      // PushEvent — obs: a API pública de eventos não expõe mensagens de commit,
+      // então o repositório do site é coberto pela API de commits (normalizeSiteCommits)
+      if (bruto === REPO_SITE) return;
+      var genericos = (e.payload && typeof e.payload.size === "number" && e.payload.size > 0)
+        ? e.payload.size
+        : 1; // sem tamanho informado: cada push web equivale a 1 commit
+      {
         var k = "push|" + bruto + "|" + dia;
         if (!somaDia[k]) {
           somaDia[k] = { bruto: bruto, repo: repo, n: 0, date: e.created_at };
@@ -395,6 +400,43 @@
       return it;
     });
     return out;
+  }
+
+  // commits do repositório do site: ações do painel admin + contagem exata por dia
+  function normalizeSiteCommits(lista) {
+    var out = [], somaDia = {};
+    (lista || []).forEach(function (c) {
+      var msg = c && c.commit && c.commit.message ? c.commit.message : "";
+      var data = c && c.commit && c.commit.author && c.commit.author.date ? c.commit.author.date : null;
+      if (!data) return;
+      var dia = String(data).slice(0, 10);
+      var it = adminCommitItem(msg);
+      if (it) {
+        it.date = data;
+        it.origin = "github";
+        it.key = "adm|" + it.key + "|" + dia;
+        it.repoKey = REPO_SITE;
+        out.push(it);
+      } else {
+        var k = "push|" + REPO_SITE + "|" + dia;
+        if (!somaDia[k]) {
+          somaDia[k] = { n: 0, date: data, key: k, site: true };
+          out.push(somaDia[k]);
+        }
+        somaDia[k].n++;
+      }
+    });
+    return out.map(function (it) {
+      if (it.site) {
+        var n = it.n;
+        return {
+          tag: "Código",
+          text: "Código de **" + mdSafe(prettyRepo(REPO_SITE)) + "** atualizado — " + n + " commit" + (n > 1 ? "s" : "") + " publicado" + (n > 1 ? "s" : "") + ".",
+          date: it.date, origin: "github", key: it.key, repoKey: REPO_SITE
+        };
+      }
+      return it;
+    });
   }
 
   // traduz mensagens de commit do painel admin em itens amigáveis do feed

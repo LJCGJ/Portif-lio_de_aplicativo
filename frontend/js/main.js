@@ -188,6 +188,8 @@
     "Portif-lio_de_aplicativo": "Portfólio LJCGJ.dev",
     "Limpador_arquivos": "Limpador de Arquivos"
   };
+  var REPO_SITE = "Portif-lio_de_aplicativo"; // commits do painel admin moram aqui
+
   function prettyRepo(nome) {
     nome = String(nome || "").replace(GITHUB_USER + "/", "");
     return NOMES_REPOS[nome] || nome.replace(/[-_]+/g, " ");
@@ -213,7 +215,7 @@
     // só as fontes automáticas (GitHub) passam por mdSafe, pois vêm de dados não controlados.
 
     var pGitHub = soft(
-      fetch("https://api.github.com/users/" + GITHUB_USER + "/events/public"),
+      fetch("https://api.github.com/users/" + GITHUB_USER + "/events/public?per_page=100"),
       function (events) {
         if (events && events.length) {
           try { localStorage.setItem("feed_gh_cache", JSON.stringify(events)); } catch (e) {}
@@ -225,7 +227,7 @@
     // repositórios do usuário: garante que projetos novos apareçam mesmo
     // quando o evento de criação já saiu da janela da API de eventos
     var pRepos = soft(
-      fetch("https://api.github.com/users/" + GITHUB_USER + "/repos?sort=created&per_page=10"),
+      fetch("https://api.github.com/users/" + GITHUB_USER + "/repos?sort=created&per_page=20"),
       function (repos) {
         if (repos && repos.length) {
           try { localStorage.setItem("feed_gh_repos", JSON.stringify(repos)); } catch (e) {}
@@ -262,19 +264,19 @@
         } catch (e) { repoItems = []; }
       }
 
-      // um destaque por repositório (releases sempre passam)
+      // remove repetições do mesmo acontecimento (tipo+repositório+dia)
       var porRepo = {};
       var items = parts[0].concat(ghItems, repoItems, parts[2])
         .filter(function (it) { return it.text; })
         .map(function (it) { it.ts = new Date(it.date).getTime() || 0; return it; })
         .sort(function (a, b) { return b.ts - a.ts; })
         .filter(function (it) {
-          if (it.origin !== "github" || it.tag === "Release" || !it.key) return true;
+          if (it.origin !== "github" || !it.key) return true;
           if (porRepo[it.key]) return false;
           porRepo[it.key] = true;
           return true;
         })
-        .slice(0, 8);
+        .slice(0, 20);
 
       if (!items.length) {
         host.innerHTML = '<p class="mono" style="color:var(--ink-faint)">Sem novidades por enquanto.</p>';
@@ -304,35 +306,82 @@
 
   // transforma eventos crus do GitHub em itens do feed
   function normalizeGitHub(events) {
-    var vistos = {};
-    return (events || [])
-      .filter(function (e) { return e.type === "ReleaseEvent" || e.type === "PushEvent" || e.type === "CreateEvent"; })
-      .filter(function (e) {
-        // um item por repositorio (o mais recente); releases sempre passam
-        var nome = e.repo && e.repo.name ? e.repo.name : "";
-        if (e.type === "ReleaseEvent") return true;
-        if (vistos[nome]) return false;
-        vistos[nome] = true;
-        return true;
-      })
-      .slice(0, 8)
-      .map(function (e) {
-        var bruto = (e.repo && e.repo.name ? e.repo.name : "").replace(GITHUB_USER + "/", "");
-        var repo = mdSafe(prettyRepo(bruto));
-        var tag = "Código", text;
-        if (e.type === "ReleaseEvent") {
-          tag = "Release";
-          var rel = e.payload && e.payload.release ? (e.payload.release.name || e.payload.release.tag_name) : "";
-          text = "Versão " + (rel ? mdSafe(rel) + " " : "") + "de **" + repo + "** publicada e disponível para download.";
-        } else if (e.type === "CreateEvent") {
-          tag = "Repo";
-          text = "Novo projeto no GitHub: **" + repo + "**.";
-        } else {
-          var n = e.payload && e.payload.commits ? e.payload.commits.length : 0;
-          text = "Código de **" + repo + "** atualizado" + (n ? " — " + n + " commit" + (n > 1 ? "s" : "") + " publicado" + (n > 1 ? "s" : "") : "") + ".";
-        }
-        return { tag: tag, text: text, date: e.created_at, origin: "github", key: bruto };
-      });
+    var out = [];
+    (events || []).forEach(function (e) {
+      if (e.type !== "ReleaseEvent" && e.type !== "PushEvent" && e.type !== "CreateEvent") return;
+      var bruto = (e.repo && e.repo.name ? e.repo.name : "").replace(GITHUB_USER + "/", "");
+      var repo = mdSafe(prettyRepo(bruto));
+      var dia = String(e.created_at || "").slice(0, 10);
+
+      if (e.type === "ReleaseEvent") {
+        var rel = e.payload && e.payload.release ? (e.payload.release.name || e.payload.release.tag_name) : "";
+        out.push({
+          tag: "Release",
+          text: "Versão " + (rel ? mdSafe(rel) + " " : "") + "de **" + repo + "** publicada e disponível para download.",
+          date: e.created_at, origin: "github", key: "rel|" + bruto + "|" + (rel || dia)
+        });
+        return;
+      }
+
+      if (e.type === "CreateEvent") {
+        // só criação de repositório (ignora branches e tags)
+        if (!e.payload || e.payload.ref_type !== "repository") return;
+        out.push({
+          tag: "Repo",
+          text: "Novo projeto no GitHub: **" + repo + "**.",
+          date: e.created_at, origin: "github", key: "new|" + bruto
+        });
+        return;
+      }
+
+      // PushEvent
+      var commits = (e.payload && e.payload.commits) || [];
+      var genericos = 0;
+      if (bruto === REPO_SITE) {
+        // commits do painel admin viram itens específicos do site
+        commits.forEach(function (c) {
+          var it = adminCommitItem(c && c.message ? c.message : "");
+          if (it) {
+            it.date = e.created_at;
+            it.origin = "github";
+            it.key = "adm|" + it.key + "|" + dia;
+            out.push(it);
+          } else {
+            genericos++;
+          }
+        });
+      } else {
+        genericos = commits.length;
+      }
+      if (genericos > 0 || !commits.length) {
+        out.push({
+          tag: "Código",
+          text: "Código de **" + repo + "** atualizado" + (genericos ? " — " + genericos + " commit" + (genericos > 1 ? "s" : "") + " publicado" + (genericos > 1 ? "s" : "") : "") + ".",
+          date: e.created_at, origin: "github", key: "push|" + bruto + "|" + dia
+        });
+      }
+    });
+    return out;
+  }
+
+  // traduz mensagens de commit do painel admin em itens amigáveis do feed
+  function adminCommitItem(msg) {
+    msg = String(msg || "").split("\n")[0].trim();
+    var m;
+    if ((m = msg.match(/^post:\s*(.+)/i))) {
+      return { tag: "Blog", text: "Post publicado ou atualizado no blog: **" + mdSafe(m[1]) + "**.", key: "post|" + m[1] };
+    }
+    if ((m = msg.match(/^projetos?:\s*(.+)/i))) {
+      return { tag: "Status", text: "Vitrine de projetos do site atualizada (" + mdSafe(m[1]) + ").", key: "proj|" + m[1] };
+    }
+    if ((m = msg.match(/^downloads?:\s*(.+)/i))) {
+      return { tag: "Status", text: "Página de downloads atualizada (" + mdSafe(m[1]) + ").", key: "dl|" + m[1] };
+    }
+    if (/^textos?:/i.test(msg)) {
+      return { tag: "Status", text: "Textos do site atualizados pelo painel administrativo.", key: "textos" };
+    }
+    if (/^feed:/i.test(msg) || /^blog:/i.test(msg)) return null; // acompanham outras ações; seriam ruído
+    return null; // commit comum: entra na contagem genérica de código
   }
 
   // transforma a lista de repositórios em itens "novo projeto" do feed

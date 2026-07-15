@@ -285,7 +285,7 @@
 
       // remove repetições do mesmo acontecimento (tipo+repositório+dia)
       var porRepo = {};
-      var items = parts[0].concat(ghItems, repoItems, siteItems, parts[2])
+      var noticias = ghItems.concat(repoItems, siteItems, parts[2])
         .filter(function (it) { return it.text; })
         .map(function (it) { it.ts = new Date(it.date).getTime() || 0; return it; })
         .sort(function (a, b) { return b.ts - a.ts; })
@@ -296,6 +296,11 @@
           return true;
         })
         .slice(0, 30);
+
+      // curiosidades manuais (data/feed.json): fixas no final, nunca saem da lista
+      var fixos = parts[0].filter(function (it) { return it.text; })
+        .map(function (it) { it.ts = new Date(it.date).getTime() || 0; return it; });
+      var items = noticias.concat(fixos);
 
       if (!items.length) {
         host.innerHTML = '<p class="mono" style="color:var(--ink-faint)">Sem novidades por enquanto.</p>';
@@ -315,7 +320,7 @@
                 '<span class="fi-tags ' + m.cls + '">' +
                   m.tags.map(function (t) { return "[" + esc(t) + "]"; }).join(" ") +
                 '</span>' +
-                '<span class="fi-date">Data: ' + feedWhen(it.ts) + '</span>' +
+                '<span class="fi-date">Data: ' + (it.origin === "local" ? "Sempre atual" : feedWhen(it.ts)) + '</span>' +
               '</div>' +
               '<div class="fi-text">' + engine.render(it.text) + '</div>' +
             '</div>'

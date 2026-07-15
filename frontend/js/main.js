@@ -579,12 +579,14 @@
     }
   }
 
-  // "Hoje", "Ontem", "N dias atrás" ou data curta
+  // "Hoje", "Ontem", "N dias atrás" ou data curta — por dia de CALENDÁRIO local
+  // (não por 24h corridas, senão um commit de ontem à noite ainda apareceria como "Hoje")
   function feedWhen(ts) {
     if (!ts) return "";
-    var dias = Math.floor((Date.now() - ts) / 86400000);
-    if (dias <= 0) return "Hoje";
-    if (dias === 1) return "Ontem";
+    var dd = diaLocal(ts);
+    if (dd === diaLocal(Date.now())) return "Hoje";
+    if (dd === diaLocal(Date.now() - 86400000)) return "Ontem";
+    var dias = Math.round((Date.now() - ts) / 86400000);
     if (dias < 30) return dias + " dias atrás";
     var d = new Date(ts);
     return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });

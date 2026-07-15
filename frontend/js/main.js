@@ -283,9 +283,11 @@
         return;
       }
 
-      // cada item: cabeçalho estruturado + texto renderizado pelo motor C++/Wasm
+      // cada item: cabeçalho estruturado + texto renderizado pelo motor C++/Wasm.
+      // O tempo real da renderização é medido e vira o item fixado no topo.
       window.MdEngine.ready.then(function (engine) {
-        host.innerHTML = items.map(function (it) {
+        var t0 = performance.now();
+        var corpo = items.map(function (it) {
           var m = feedMeta(it.tag);
           return (
             '<div class="feed-item">' +
@@ -300,6 +302,21 @@
             '</div>'
           );
         }).join("");
+        var dt = performance.now() - t0;
+        var ms = (dt < 1 ? dt.toFixed(2) : dt.toFixed(1)).replace(".", ",");
+        var mp = feedMeta("Status");
+        var pinned =
+          '<div class="feed-item pinned">' +
+            '<div class="fi-head">' +
+              '<span class="fi-icon">' + mp.icon + '</span>' +
+              '<span class="fi-tags ' + mp.cls + '">' +
+                mp.tags.map(function (t) { return "[" + esc(t) + "]"; }).join(" ") +
+              '</span>' +
+              '<span class="fi-date">Data: Agora</span>' +
+            '</div>' +
+            '<div class="fi-text">' + engine.render("Motor Wasm ativo: os " + items.length + " itens deste feed foram renderizados em **" + ms + " ms** no seu dispositivo.") + '</div>' +
+          '</div>';
+        host.innerHTML = pinned + corpo;
       });
     });
   }

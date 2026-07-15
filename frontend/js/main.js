@@ -325,7 +325,7 @@
         var ms = (dt < 1 ? dt.toFixed(2) : dt.toFixed(1)).replace(".", ",");
         var mp = feedMeta("Status");
         var pinned =
-          '<div class="feed-item pinned">' +
+          '<div class="feed-item">' +
             '<div class="fi-head">' +
               '<span class="fi-icon">' + mp.icon + '</span>' +
               '<span class="fi-tags ' + mp.cls + '">' +

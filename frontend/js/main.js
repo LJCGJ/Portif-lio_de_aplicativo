@@ -295,7 +295,7 @@
           porRepo[it.key] = true;
           return true;
         })
-        .slice(0, 20);
+        .slice(0, 30);
 
       if (!items.length) {
         host.innerHTML = '<p class="mono" style="color:var(--ink-faint)">Sem novidades por enquanto.</p>';
@@ -325,7 +325,7 @@
         var ms = (dt < 1 ? dt.toFixed(2) : dt.toFixed(1)).replace(".", ",");
         var mp = feedMeta("Status");
         var pinned =
-          '<div class="feed-item">' +
+          '<div class="feed-item status-live">' +
             '<div class="fi-head">' +
               '<span class="fi-icon">' + mp.icon + '</span>' +
               '<span class="fi-tags ' + mp.cls + '">' +

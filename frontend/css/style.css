@@ -530,6 +530,14 @@ a:hover { text-decoration: underline; }
   color: #E7EBF2;
 }
 .feed-item { margin-bottom: 0.95rem; }
+.feed-item.pinned {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #10131B;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
 .feed-item:last-child { margin-bottom: 0; }
 .fi-head {
   display: flex;

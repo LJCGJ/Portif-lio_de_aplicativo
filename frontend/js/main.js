@@ -189,6 +189,7 @@
     "Limpador_arquivos": "Limpador de Arquivos"
   };
   var REPO_SITE = "Portif-lio_de_aplicativo"; // commits do painel admin moram aqui
+  var LANGS = {}; // linguagem principal de cada repositório (vem da API /repos)
 
   function prettyRepo(nome) {
     nome = String(nome || "").replace(GITHUB_USER + "/", "");
@@ -288,7 +289,7 @@
       window.MdEngine.ready.then(function (engine) {
         var t0 = performance.now();
         var corpo = items.map(function (it) {
-          var m = feedMeta(it.tag);
+          var m = feedMeta(it.tag, it.repoKey);
           return (
             '<div class="feed-item">' +
               '<div class="fi-head">' +
@@ -324,6 +325,7 @@
   // transforma eventos crus do GitHub em itens do feed
   function normalizeGitHub(events) {
     var out = [];
+    var somaDia = {}; // repositório+dia -> total de commits publicados no dia
     (events || []).forEach(function (e) {
       if (e.type !== "ReleaseEvent" && e.type !== "PushEvent" && e.type !== "CreateEvent") return;
       var bruto = (e.repo && e.repo.name ? e.repo.name : "").replace(GITHUB_USER + "/", "");
@@ -346,7 +348,7 @@
         out.push({
           tag: "Repo",
           text: "Novo projeto no GitHub: **" + repo + "**.",
-          date: e.created_at, origin: "github", key: "new|" + bruto
+          date: e.created_at, origin: "github", key: "new|" + bruto, repoKey: bruto
         });
         return;
       }
@@ -371,12 +373,26 @@
         genericos = commits.length;
       }
       if (genericos > 0 || !commits.length) {
-        out.push({
-          tag: "Código",
-          text: "Código de **" + repo + "** atualizado" + (genericos ? " — " + genericos + " commit" + (genericos > 1 ? "s" : "") + " publicado" + (genericos > 1 ? "s" : "") : "") + ".",
-          date: e.created_at, origin: "github", key: "push|" + bruto + "|" + dia
-        });
+        var k = "push|" + bruto + "|" + dia;
+        if (!somaDia[k]) {
+          somaDia[k] = { bruto: bruto, repo: repo, n: 0, date: e.created_at };
+          out.push(somaDia[k]); // marcador; texto final montado abaixo
+        }
+        somaDia[k].n += genericos;
+        somaDia[k].key = k;
       }
+    });
+    // fecha os agregados de push: um item por repositório/dia com a soma real
+    out = out.map(function (it) {
+      if (!it.tag && it.repo) {
+        var n = it.n;
+        return {
+          tag: "Código",
+          text: "Código de **" + it.repo + "** atualizado" + (n ? " — " + n + " commit" + (n > 1 ? "s" : "") + " publicado" + (n > 1 ? "s" : "") : "") + ".",
+          date: it.date, origin: "github", key: it.key, repoKey: it.bruto
+        };
+      }
+      return it;
     });
     return out;
   }
@@ -403,6 +419,9 @@
 
   // transforma a lista de repositórios em itens "novo projeto" do feed
   function normalizeRepos(repos) {
+    (repos || []).forEach(function (r) {
+      if (r && r.name && r.language) LANGS[r.name] = r.language;
+    });
     var limite = Date.now() - 90 * 86400000; // últimos 90 dias
     return (repos || [])
       .filter(function (r) { return r && !r.fork && r.created_at && new Date(r.created_at).getTime() > limite; })
@@ -415,7 +434,8 @@
           text: "Novo projeto no GitHub: **" + repo + "**" + desc + ".",
           date: r.created_at,
           origin: "github",
-          key: r.name
+          key: "new|" + r.name,
+          repoKey: r.name
         };
       });
   }
@@ -426,13 +446,14 @@
   }
 
   // ícone e etiquetas de cada categoria do feed (estilo do painel)
-  function feedMeta(tag) {
+  function feedMeta(tag, repoKey) {
+    var lang = repoKey && LANGS[repoKey] ? LANGS[repoKey] : null;
     switch (tag) {
       case "Curiosidade": return { icon: "💡", tags: ["Lâmpada", "Curiosidade"], cls: "t-amber" };
       case "Status":      return { icon: "🖥️", tags: ["Chip", "Status"],        cls: "t-green" };
       case "Release":     return { icon: "🚀", tags: ["Release", "Status"],      cls: "t-green" };
-      case "Código":      return { icon: "🛠️", tags: ["C++", "Software"],       cls: "t-blue" };
-      case "Repo":        return { icon: "📦", tags: ["Repo", "Novidade"],       cls: "t-blue" };
+      case "Código":      return { icon: "🛠️", tags: [lang || "Código", "Software"], cls: "t-blue" };
+      case "Repo":        return { icon: "📦", tags: ["Repo", lang || "Novidade"], cls: "t-blue" };
       case "Blog":        return { icon: "📝", tags: ["Blog", "Novidade"],       cls: "t-orange" };
       default:            return { icon: "✨", tags: [tag],                       cls: "t-amber" };
     }

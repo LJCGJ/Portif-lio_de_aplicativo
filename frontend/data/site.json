@@ -1,8 +1,8 @@
 {
   "hero": {
-    "eyebrow": "Leonardo Gonzaga · portfólio",
-    "title_html": "QA automation de dia. <span class=\"hl\">C++ de noite.</span>",
-    "lead": "No trabalho, automatizo testes com Robot Framework e Python. Fora dele, construo minhas próprias ferramentas em C++ — o motor que renderiza o feed aí do lado é uma delas.",
+    "eyebrow": "Leonardo Gonzaga · Engenharia de Software & QA",
+    "title_html": "Da qualidade do software <span class=\"hl\">à arte de construí-lo.</span>",
+    "lead": "Trabalho com automação de testes em sistemas corporativos. Fora do expediente, desenvolvo minhas próprias ferramentas em C++, C# e Kotlin — como o motor que renderiza este feed em tempo real, direto no seu navegador.",
     "btn_primary": "Ver projetos",
     "btn_github": "GitHub ↗"
   },

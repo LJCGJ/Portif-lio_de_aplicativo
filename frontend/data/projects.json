@@ -1,5 +1,27 @@
 [
   {
+    "featured": false,
+    "icon": "🤖",
+    "kicker": "Android",
+    "title": "Auto-clicker",
+    "desc": "App de cliques/gestos automáticos em Kotlin + Jetpack Compose, com cálculo do caminho de swipe em C++ nativo (curvas de Bézier com jitter) via NDK.",
+    "tags": [
+      "Kotlin",
+      "Compose",
+      "NDK / C++"
+    ],
+    "actions": [
+      {
+        "label": "Código ↗",
+        "href": "https://github.com/LJCGJ",
+        "style": "ghost",
+        "external": true
+      }
+    ],
+    "carousel": true,
+    "order": 2
+  },
+  {
     "featured": true,
     "icon": "🧹",
     "kicker": "Destaque · Windows",
@@ -26,28 +48,6 @@
     ],
     "carousel": true,
     "order": 1
-  },
-  {
-    "featured": false,
-    "icon": "🤖",
-    "kicker": "Android",
-    "title": "Auto-clicker",
-    "desc": "App de cliques/gestos automáticos em Kotlin + Jetpack Compose, com cálculo do caminho de swipe em C++ nativo (curvas de Bézier com jitter) via NDK.",
-    "tags": [
-      "Kotlin",
-      "Compose",
-      "NDK / C++"
-    ],
-    "actions": [
-      {
-        "label": "Código ↗",
-        "href": "https://github.com/LJCGJ",
-        "style": "ghost",
-        "external": true
-      }
-    ],
-    "carousel": true,
-    "order": 2
   },
   {
     "featured": false,
